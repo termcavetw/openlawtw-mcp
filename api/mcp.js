@@ -2,7 +2,7 @@
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.1.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.2.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -15,7 +15,7 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 6. 開挖率、建蔽率、容積率等常寫在各都市計畫的土管要點，本庫未收；經濟部、農業部、消防署及縣市政府函釋也未收。查不到時要說明是收錄範圍的限制。
 7. 網路資料的用法：條文與函釋以本工具查到的為準。網路文章、新聞、論壇只能當線索；與條文或函釋不一致時，以條文為準，並明白告訴使用者網路說法哪裡錯、錯在哪（例如漏了但書、混用了地方規定）。
 8. 本庫未收錄的內容（土管要點、其他機關或縣市政府函釋、法院判決、最新修法動態）可以上網查，但優先找政府官方網站（.gov.tw）；引用時註明來源網站與日期，並說明這部分不是來自 openlawtw。
-9. 來源順位：效力由高到低為 (1) 法律、法規命令與技術規範的條文；(2) 內政部國土管理署（原營建署）函釋；(3) 縣市主管建築機關的函釋、建照工作手冊、審查或複核決議（只適用該縣市）；(4) 建築師公會、學會的講座簡報與實務整理；(5) 一般網路文章、新聞、論壇。回答時每個依據都標明屬於哪一級；較低級的說法和較高級的不一致時，以較高級為準並說明差在哪。第 3 級只能用在該縣市的案子；第 4、5 級只能當實務參考或線索，不能當法源，也不能寫成「依規定」。網路上找到的函釋、會議紀錄、簡報，要找到原文件（發文機關、字號、日期）才能引用；找不到原文就說明「未見原文，僅供參考」。
+9. 來源順位：效力由高到低為 (1) 法律、法規命令與技術規範的條文；(2) 內政部國土管理署（原營建署）函釋，含正式發文的研商會議紀錄；(3) 縣市主管建築機關的函釋、建照工作手冊、審查或複核決議（只適用該縣市）；(4) 建築師公會、學會的講座簡報與實務整理；(5) 一般網路文章、新聞、論壇。回答時每個依據都標明屬於哪一級；較低級的說法和較高級的不一致時，以較高級為準並說明差在哪。第 3 級只能用在該縣市的案子；第 4、5 級只能當實務參考或線索，不能當法源，也不能寫成「依規定」。網路上找到的函釋、會議紀錄、簡報，要找到原文件（發文機關、字號、日期）才能引用；找不到原文就說明「未見原文，僅供參考」。
 10. 官方核對：遇到下列情況，要開工具附的「官方來源」連結（全國法規資料庫、縣市法規網、國土署函釋頁面）核對關鍵條文的內容與最新修正日是否一致——(a) 答案會用在擬函、送審、回覆業主等正式用途；(b) 使用者問到最近有沒有修正；(c) data_info 顯示最近同步已超過 7 天。只拿官方網站核對，不拿一般網路文章核對。對不上時以官方網站為準，告訴使用者 openlawtw 可能尚未同步，並建議回報給 openlawtw。無法連到官方網站時，說明未能核對。
 11. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
 建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。無障礙設施設計規範、耐震設計規範、綠建築技術規範等沒有逐條條文的原文文件，用 search_documents → get_document（無障礙規範可直接填節號，如 805）。`;
@@ -62,8 +62,8 @@ const TOOLS = [
   },
   {
     name: "search_documents", title: "搜尋原文文件",
-    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。",
-    inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: ["keywords"] },
+    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。不給 keywords 會列出全部原文文件清單。",
+    inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: [] },
     annotations: { ...RO, title: "搜尋原文文件" }, run: searchDocuments,
   },
   {

@@ -1,8 +1,8 @@
 // openlawtw MCP server — Streamable HTTP transport, stateless, JSON responses.
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
-import { findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
+import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.0.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.1.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -17,7 +17,7 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 8. 本庫未收錄的內容（土管要點、其他機關或縣市政府函釋、法院判決、最新修法動態）可以上網查，但優先找政府官方網站（.gov.tw）；引用時註明來源網站與日期，並說明這部分不是來自 openlawtw。
 9. 官方核對：遇到下列情況，要開工具附的「官方來源」連結（全國法規資料庫、縣市法規網、國土署函釋頁面）核對關鍵條文的內容與最新修正日是否一致——(a) 答案會用在擬函、送審、回覆業主等正式用途；(b) 使用者問到最近有沒有修正；(c) data_info 顯示最近同步已超過 7 天。只拿官方網站核對，不拿一般網路文章核對。對不上時以官方網站為準，告訴使用者 openlawtw 可能尚未同步，並建議回報給 openlawtw。無法連到官方網站時，說明未能核對。
 10. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
-建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。`;
+建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。無障礙設施設計規範、耐震設計規範、綠建築技術規範等沒有逐條條文的原文文件，用 search_documents → get_document（無障礙規範可直接填節號，如 805）。`;
 
 const str = (description) => ({ type: "string", description });
 const RO = { readOnlyHint: true, openWorldHint: false };
@@ -58,6 +58,18 @@ const TOOLS = [
     description: "讀取一則函釋全文（用 search_rulings 結果裡的 id），含字號、日期、涉及條文與停止適用／條文已修正警告。",
     inputSchema: { type: "object", properties: { id: str("函釋 id，例如 13672") }, required: ["id"] },
     annotations: { ...RO, title: "讀函釋" }, run: getRuling,
+  },
+  {
+    name: "search_documents", title: "搜尋原文文件",
+    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。",
+    inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: ["keywords"] },
+    annotations: { ...RO, title: "搜尋原文文件" }, run: searchDocuments,
+  },
+  {
+    name: "get_document", title: "讀原文文件",
+    description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
+    inputSchema: { type: "object", properties: { document: str("文件名稱、簡稱或 ID，例如「無障礙規範」「內政部-GL000734」"), section: str("節號，例如 805 或 805.1（限有章節的文件）"), page: { type: "integer", minimum: 1, description: "PDF 頁碼" }, region: str("限定地區（可省略）") }, required: ["document"] },
+    annotations: { ...RO, title: "讀原文文件" }, run: getDocument,
   },
   {
     name: "check_conflicts", title: "法規衝突檢查",

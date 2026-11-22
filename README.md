@@ -24,7 +24,7 @@ Endpoint: `https://<your-deployment>.vercel.app/mcp` (Streamable HTTP, no login)
 | `search_rulings` | Rulings by law/article or keywords, newest first, flagged ⚠ when **revoked** by a later ruling or **older than the article's latest amendment** |
 | `get_ruling` | Full text of one ruling with the same warnings |
 | `check_conflicts` | Per law or article: references to deleted/missing articles, "declared void" notes, revoked rulings, stale rulings |
-| `data_info` | Data version, last sync, coverage |
+| `search_documents`、`get_document`、`data_info` | Data version, last sync, coverage |
 
 The server also sends **instructions** to the client on connect: look things up before answering, cite article numbers and links, never invent rulings, surface every ⚠.
 

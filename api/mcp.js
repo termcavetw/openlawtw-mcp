@@ -2,7 +2,7 @@
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.2.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.3.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -62,7 +62,7 @@ const TOOLS = [
   },
   {
     name: "search_documents", title: "搜尋原文文件",
-    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。不給 keywords 會列出全部原文文件清單。",
+    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。也可查建築物使用類組及變更使用辦法的附表一（類組定義）、附表二（使用項目舉例，例如餐廳面積 300 ㎡ 分 B-3 或 G-3）、附表四（各類組檢討標準；document=\"變使\" section=\"附表四 B-3\"），這些是 PDF 抽出文字，引用前要請使用者開原檔核對。不給 keywords 會列出全部原文文件清單。",
     inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: [] },
     annotations: { ...RO, title: "搜尋原文文件" }, run: searchDocuments,
   },

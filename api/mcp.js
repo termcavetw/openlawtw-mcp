@@ -68,7 +68,7 @@ const TOOLS = [
   },
   {
     name: "get_document", title: "讀原文文件",
-    description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
+    description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。法規的附表（已抽出文字者）也用本工具讀：document 填法規名稱，section 填附表代號，例如 section=\"附表二 B-3\"（變使附表二的類組）、\"附表一\"、\"第17條 表\"（構造編活載重表），或加 page 指定附表頁碼；只填 document 會列出該法規的附表目錄。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
     inputSchema: { type: "object", properties: { document: str("文件名稱、簡稱或 ID，例如「無障礙規範」「內政部-GL000734」"), section: str("節號，例如 805 或 805.1（限有章節的文件）"), page: { type: "integer", minimum: 1, description: "PDF 頁碼" }, region: str("限定地區（可省略）") }, required: ["document"] },
     annotations: { ...RO, title: "讀原文文件" }, run: getDocument,
   },

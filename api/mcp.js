@@ -2,7 +2,7 @@
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.4.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.5.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -62,7 +62,7 @@ const TOOLS = [
   },
   {
     name: "search_documents", title: "搜尋原文文件",
-    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。也可查建築物使用類組及變更使用辦法的附表一（類組定義）、附表二（使用項目舉例，例如餐廳面積 300 ㎡ 分 B-3 或 G-3）、附表四（各類組檢討標準；document=\"變使\" section=\"附表四 B-3\"），另外也抽出文字的官方 PDF 附表：構造編第 17 條（樓地板活載重）、設計施工編 308-2／116-2／167-6／170／188／230／261／262／264 條完整條文、非都市土地使用管制規則附表一（容許使用細目，依頁讀）、農舍辦法附表、毗連擴展計畫附表、公設多目標使用辦法附表、公共安全檢查簽證申報辦法附表、無障礙住宅附表、農業設施容許使用附表一至五、自來水用水設備標準附表、身心障礙者專用停車位第 9 條（只填 document 會列出該法規可讀的附表；矩陣符號表如變使附表三、公安改善辦法附表一二未收，會給原檔連結）。這些是 PDF 抽出文字，引用前要請使用者開原檔核對。不給 keywords 會列出全部原文文件清單。",
+    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。也可查建築物使用類組及變更使用辦法的附表一（類組定義）、附表二（使用項目舉例，例如餐廳面積 300 ㎡ 分 B-3 或 G-3）、附表四（各類組檢討標準；document=\"變使\" section=\"附表四 B-3\"），另外也抽出文字的官方 PDF 附表：構造編第 17 條（樓地板活載重）、設計施工編 308-2／116-2／167-6／170／188／230／261／262／264 條完整條文、非都市土地使用管制規則附表一（容許使用細目，依頁讀）、農舍辦法附表、毗連擴展計畫附表、公設多目標使用辦法附表、公共安全檢查簽證申報辦法附表、無障礙住宅附表、農業設施容許使用附表一至五、自來水用水設備標準附表、身心障礙者專用停車位第 9 條（表格已依 PDF 表格線重排成「欄｜欄」，構造編第 17 條活載重表為 section="表"；搜尋時關鍵字分散在同附表不同頁也會提示；只填 document 會列出該法規可讀的附表；矩陣符號表如變使附表三、公安改善辦法附表一二未收，會給原檔連結）。這些是 PDF 抽出文字，引用前要請使用者開原檔核對。不給 keywords 會列出全部原文文件清單。",
     inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: [] },
     annotations: { ...RO, title: "搜尋原文文件" }, run: searchDocuments,
   },

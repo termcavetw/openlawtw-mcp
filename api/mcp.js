@@ -3,7 +3,7 @@
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.2" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.3" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -76,13 +76,13 @@ const TOOLS = [
   },
   {
     name: "search_minutes", title: "搜尋桃園市法規疑義會議紀錄",
-    description: "搜尋桃園市政府建管單位（建築管理處、都市發展局、原工務局）「法規執行疑義研討會」「加速建照案審查修正意見暨疑義會議」等會議紀錄與公文，約 160 份（民國 102 年起，轉載於桃園市建築師公會網站）。條文與國土署函釋沒有明確答案、要看桃園市實務怎麼認定時用（例如室內裝修、變更設計、預審、無障礙審查的執行細節）。屬第 3 級來源：只適用桃園市，不是法源。部分是掃描頁經 OCR，引用前請開原檔核對。不給 keywords 會列出收錄範圍。",
+    description: "搜尋桃園市政府建管單位（建築管理處、都市發展局、原工務局）「法規執行疑義研討會」「加速建照案審查修正意見暨疑義會議」等會議紀錄與公文，160 多份（民國 102 年起，轉載於桃園市建築師公會網站）。條文與國土署函釋沒有明確答案、要看桃園市實務怎麼認定時用（例如室內裝修、變更設計、預審、無障礙審查的執行細節）。屬只適用桃園市，不是法源；市府召開並作成決議者屬第 3 級，公會召開、市府只轉送者屬第 4 級。部分是掃描頁經 OCR，引用前請開原檔核對。不給 keywords 會列出收錄範圍。",
     inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"室內裝修\", \"現況測量圖\"]" }, year: { type: "integer", description: "只看某民國年（可省略）" }, limit: { type: "integer", minimum: 1, maximum: 30, default: 8 }, any: { type: "boolean", default: false } }, required: [] },
     annotations: { ...RO, title: "搜尋桃園市法規疑義會議紀錄" }, run: searchMinutes,
   },
   {
     name: "get_minutes", title: "讀桃園市會議紀錄",
-    description: "讀一份桃園市法規疑義會議紀錄（id 來自 search_minutes）。不填 page 讀第 1 頁（公文封面，含發文機關、日期、字號）；填 page 讀指定頁全文。屬第 3 級來源，只適用桃園市。",
+    description: "讀一份桃園市法規疑義會議紀錄（id 來自 search_minutes）。不填 page 讀第 1 頁（公文封面，含發文機關、日期、字號）；填 page 讀指定頁全文。只適用桃園市；市府召開並作成決議者屬第 3 級，公會召開、市府只轉送者屬第 4 級（見第 9、11 條）。",
     inputSchema: { type: "object", properties: { id: str("search_minutes 結果裡的 id（也可填標題關鍵字）"), page: { type: "integer", minimum: 1 } }, required: ["id"] },
     annotations: { ...RO, title: "讀桃園市會議紀錄" }, run: getMinutes,
   },

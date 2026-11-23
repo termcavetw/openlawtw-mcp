@@ -1,5 +1,7 @@
 # 桃園市法規執行疑義會議紀錄：產生 lib/minutes.js 的腳本（交接用）
 
+> **已移交**：自 v1.6.5 起，會議紀錄改由 openlawtw 主 repo 每週同步（`manifest.minutes`），MCP 直接讀取，`lib/minutes.js` 已刪除（歷史版本見 git 紀錄 ed23567 以前）。本資料夾只留作紀錄。
+
 這些是 2026-11-23 第一次建立 `lib/minutes.js` 時用的一次性腳本，原本在暫存環境（/tmp/tyaa）執行，路徑寫死，**不能直接跑**，只供 openlawtw 主 repo 改寫成每週同步時參考。
 
 ## 來源

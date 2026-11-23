@@ -76,6 +76,11 @@ const CASES = [
   ["get_minutes", { id: "不存在" }, ["找不到會議紀錄「不存在」"]],
 ];
 
+// 實務題庫（tests/eval.json）：每題的工具呼叫輸出必須含 check 字串
+import fs from "node:fs";
+const EVAL = JSON.parse(fs.readFileSync(new URL("./eval.json", import.meta.url), "utf8"));
+for (const it of EVAL.items) for (const c of it.calls) CASES.push([c.tool, c.args, c.check, { label: `題庫 ${it.id}` }]);
+
 const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
 const ver = init.result?.serverInfo?.version;
 check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
@@ -88,7 +93,7 @@ for (const t of tl.result?.tools || []) check(`${t.name} 有說明與 inputSchem
 check("工具說明沒有過時的「未收」", !(tl.result?.tools || []).some((t) => /公安改善辦法附表一二未收|變使附表三.{0,6}未收/.test(t.description)));
 
 for (const [name, args, want, opt = {}] of CASES) {
-  const label = `${name} ${JSON.stringify(args)}`;
+  const label = `${opt.label ? opt.label + " " : ""}${name} ${JSON.stringify(args)}`;
   let r;
   try { r = await call(name, args); } catch (e) { check(label + " 執行", false, e.stack); continue; }
   check(label + ` isError=${!!opt.error}`, r.isError === !!opt.error, r.text);

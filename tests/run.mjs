@@ -40,6 +40,7 @@ const CASES = [
   ["search_rulings", { keywords: ["機車停車", "容積"], limit: 2 }, ["號"]],
   ["get_ruling", { id: "13878" }, ["營署建管字第1100008822號", "2021-03-18"]],
   ["get_ruling", { id: "16041" }, ["日期不明"]],
+  ["get_ruling", { id: "5404" }, ["重複登錄", "ruling 5393"]],
   ["check_conflicts", { law: "設計施工編" }, ["設計施工編"]],
   ["check_conflicts", { law: "建築法", region: "臺北市" }, ["建築法"], { not: ["法定空地"] }],
   ["search_documents", { keywords: ["機車", "無障礙"], limit: 2 }, ["無障礙"]],

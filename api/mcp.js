@@ -1,8 +1,9 @@
 // openlawtw MCP server — Streamable HTTP transport, stateless, JSON responses.
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
+import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.5.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -17,7 +18,8 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 8. 本庫未收錄的內容（土管要點、其他機關或縣市政府函釋、法院判決、最新修法動態）可以上網查，但優先找政府官方網站（.gov.tw）；引用時註明來源網站與日期，並說明這部分不是來自 openlawtw。
 9. 來源順位：效力由高到低為 (1) 法律、法規命令與技術規範的條文；(2) 內政部國土管理署（原營建署）函釋，含正式發文的研商會議紀錄；(3) 縣市主管建築機關的函釋、建照工作手冊、審查或複核決議（只適用該縣市）；(4) 建築師公會、學會的講座簡報與實務整理；(5) 一般網路文章、新聞、論壇。回答時每個依據都標明屬於哪一級；較低級的說法和較高級的不一致時，以較高級為準並說明差在哪。第 3 級只能用在該縣市的案子；第 4、5 級只能當實務參考或線索，不能當法源，也不能寫成「依規定」。網路上找到的函釋、會議紀錄、簡報，要找到原文件（發文機關、字號、日期）才能引用；找不到原文就說明「未見原文，僅供參考」。
 10. 官方核對：遇到下列情況，要開工具附的「官方來源」連結（全國法規資料庫、縣市法規網、國土署函釋頁面）核對關鍵條文的內容與最新修正日是否一致——(a) 答案會用在擬函、送審、回覆業主等正式用途；(b) 使用者問到最近有沒有修正；(c) data_info 顯示最近同步已超過 7 天。只拿官方網站核對，不拿一般網路文章核對。對不上時以官方網站為準，告訴使用者 openlawtw 可能尚未同步，並建議回報給 openlawtw。無法連到官方網站時，說明未能核對。
-11. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
+11. 桃園市的實務問題（條文與中央函釋沒有明確答案、要看市府怎麼認定時），再查 search_minutes：桃園市政府建管單位法規執行疑義會議紀錄與公文（轉載於桃園市建築師公會網站），只適用桃園市的案子，不是法源。市府自己召開並有決議者可當第 3 級；公會召開、市府只是轉送者只能當第 4 級實務參考。要寫明會議日期、發文機關與字號；有 OCR 誤字風險，引用前請開原檔；紀錄之間前後矛盾時以較新的為準。
+12. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
 建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。無障礙設施設計規範、耐震設計規範、綠建築技術規範等沒有逐條條文的原文文件，用 search_documents → get_document（無障礙規範可直接填節號，如 805）。`;
 
 const str = (description) => ({ type: "string", description });
@@ -71,6 +73,18 @@ const TOOLS = [
     description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。法規的附表（已抽出文字者）也用本工具讀：document 填法規名稱，section 填附表代號，例如 section=\"附表二 B-3\"（變使附表二的類組）、\"附表一\"、\"第17條 表\"（構造編活載重表），或加 page 指定附表頁碼；只填 document 會列出該法規的附表目錄。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
     inputSchema: { type: "object", properties: { document: str("文件名稱、簡稱或 ID，例如「無障礙規範」「內政部-GL000734」"), section: str("節號，例如 805 或 805.1（限有章節的文件）"), page: { type: "integer", minimum: 1, description: "PDF 頁碼" }, region: str("限定地區（可省略）") }, required: ["document"] },
     annotations: { ...RO, title: "讀原文文件" }, run: getDocument,
+  },
+  {
+    name: "search_minutes", title: "搜尋桃園市法規疑義會議紀錄",
+    description: "搜尋桃園市政府建管單位（建築管理處、都市發展局、原工務局）「法規執行疑義研討會」「加速建照案審查修正意見暨疑義會議」等會議紀錄與公文，約 160 份（民國 102 年起，轉載於桃園市建築師公會網站）。條文與國土署函釋沒有明確答案、要看桃園市實務怎麼認定時用（例如室內裝修、變更設計、預審、無障礙審查的執行細節）。屬第 3 級來源：只適用桃園市，不是法源。部分是掃描頁經 OCR，引用前請開原檔核對。不給 keywords 會列出收錄範圍。",
+    inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"室內裝修\", \"現況測量圖\"]" }, year: { type: "integer", description: "只看某民國年（可省略）" }, limit: { type: "integer", minimum: 1, maximum: 30, default: 8 }, any: { type: "boolean", default: false } }, required: [] },
+    annotations: { ...RO, title: "搜尋桃園市法規疑義會議紀錄" }, run: searchMinutes,
+  },
+  {
+    name: "get_minutes", title: "讀桃園市會議紀錄",
+    description: "讀一份桃園市法規疑義會議紀錄（id 來自 search_minutes）。不填 page 讀第 1 頁（公文封面，含發文機關、日期、字號）；填 page 讀指定頁全文。屬第 3 級來源，只適用桃園市。",
+    inputSchema: { type: "object", properties: { id: str("search_minutes 結果裡的 id（也可填標題關鍵字）"), page: { type: "integer", minimum: 1 } }, required: ["id"] },
+    annotations: { ...RO, title: "讀桃園市會議紀錄" }, run: getMinutes,
   },
   {
     name: "check_conflicts", title: "法規衝突檢查",

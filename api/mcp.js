@@ -3,7 +3,7 @@
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.3" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.4" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -64,13 +64,13 @@ const TOOLS = [
   },
   {
     name: "search_documents", title: "搜尋原文文件",
-    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。也可查建築物使用類組及變更使用辦法的附表一（類組定義）、附表二（使用項目舉例，例如餐廳面積 300 ㎡ 分 B-3 或 G-3）、附表四（各類組檢討標準；document=\"變使\" section=\"附表四 B-3\"），另外也抽出文字的官方 PDF 附表：構造編第 17 條（樓地板活載重）、設計施工編 308-2／116-2／167-6／170／188／230／261／262／264 條完整條文、非都市土地使用管制規則附表一（容許使用細目，依頁讀）、農舍辦法附表、毗連擴展計畫附表、公設多目標使用辦法附表、公共安全檢查簽證申報辦法附表、無障礙住宅附表、農業設施容許使用附表一至五、自來水用水設備標準附表（表格已依 PDF 表格線重排成「欄｜欄」，構造編第 17 條活載重表為 section=\"表\"；搜尋時關鍵字分散在同附表不同頁也會提示；只填 document 會列出該法規可讀的附表；矩陣符號表如變使附表三、公安改善辦法附表一二未收，會給原檔連結）。這些是 PDF 抽出文字，引用前要請使用者開原檔核對。不給 keywords 會列出全部原文文件清單。",
+    description: "搜尋沒有逐條條文的原文文件（官方 PDF／HTML）：建築物無障礙設施設計規範（依節號，如 805 機車停車位）、建築物耐震設計規範及解說、綠化／保水／節能／雨水貯留等綠建築技術規範、綠建材設計技術規範、電信設備技術規範，以及縣市的造價標準表、裁罰基準、審議原則等。無障礙尺寸（坡道、扶手、廁所、停車位、昇降機）一定要用這個查。也可查建築物使用類組及變更使用辦法的附表一（類組定義）、附表二（使用項目舉例，例如餐廳面積 300 ㎡ 分 B-3 或 G-3）、附表四（各類組檢討標準；document=\"變使\" section=\"附表四 B-3\"），另外也抽出文字的官方 PDF 附表：構造編第 17 條（樓地板活載重）、設計施工編 308-2／116-2／167-6／170／188／230／261／262／264 條完整條文、變使附表三（各類組使用強度與防火避難規定矩陣，依類組讀）與附表五、非都市土地使用管制規則附表一（各種使用地容許使用項目及許可使用細目，可依頁讀，或 section=\"附表一 丁種建築用地\" 依使用地類別讀）、附表一之一（海域用地）、附表二之二（變更開發計畫認定原則）、附表三（使用分區內各種使用地變更編定原則表）、原有合法建築物公共安全改善辦法附表一、二（依類組讀，如 section=\"附表一 B-3\"）、農舍辦法附表、毗連擴展計畫附表、公設多目標使用辦法附表（可依用地類別讀，如 section=\"附表 公園\"）、公共安全檢查簽證申報辦法附表、無障礙住宅附表、農業設施容許使用附表一至五、自來水用水設備標準附表（表格已依 PDF 表格線重排成「欄｜欄」，構造編第 17 條活載重表為 section=\"表\"；section 填表格第一欄的類別名稱會列出該類別的所有列；搜尋時關鍵字分散在同附表不同頁也會提示；只填 document 會列出該法規可讀的附表；身障停車位第 9 條等公報掃描附件未收，會給原檔連結）。這些是 PDF 抽出文字，引用前要請使用者開原檔核對。不給 keywords 會列出全部原文文件清單。",
     inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"機車\", \"無障礙\"]" }, document: str("限定文件（名稱、簡稱或 ID，如「無障礙規範」）"), region: str("限定地區，逗號分隔（可省略）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 }, any: { type: "boolean", default: false } }, required: [] },
     annotations: { ...RO, title: "搜尋原文文件" }, run: searchDocuments,
   },
   {
     name: "get_document", title: "讀原文文件",
-    description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。法規的附表（已抽出文字者）也用本工具讀：document 填法規名稱，section 填附表代號，例如 section=\"附表二 B-3\"（變使附表二的類組）、\"附表一\"、\"第17條 表\"（構造編活載重表），或加 page 指定附表頁碼；只填 document 會列出該法規的附表目錄。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
+    description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。法規的附表（已抽出文字者）也用本工具讀：document 填法規名稱，section 填附表代號，例如 section=\"附表二 B-3\"（變使附表二的類組）、\"附表一\"、\"第17條 表\"（構造編活載重表）、\"附表一 丁種建築用地\"（非都附表一，填表格第一欄的類別名稱會列出該類所有列），或加 page 指定附表頁碼；只填 document 會列出該法規的附表目錄。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
     inputSchema: { type: "object", properties: { document: str("文件名稱、簡稱或 ID，例如「無障礙規範」「內政部-GL000734」"), section: str("節號，例如 805 或 805.1（限有章節的文件）"), page: { type: "integer", minimum: 1, description: "PDF 頁碼" }, region: str("限定地區（可省略）") }, required: ["document"] },
     annotations: { ...RO, title: "讀原文文件" }, run: getDocument,
   },

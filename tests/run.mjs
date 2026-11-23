@@ -67,6 +67,8 @@ const CASES = [
   ["search_landuse", { keywords: ["住宅區", "建蔽率"], area: "中壢平鎮", limit: 1 }, ["可能只適用該案範圍"]],
   ["search_articles", { keywords: ["陽台", "容積"], limit: 1 }, ["2 條符合", "陽臺"], { not: ["：0 條符合"] }],
   ["search_minutes", { keywords: ["陽台", "露臺"], limit: 1 }, ["份符合"]],
+  ["search_minutes", { keywords: ["緊急升降機"], limit: 1 }, ["不論新舊都以條文與函釋為準"]],
+  ["search_articles", { keywords: ["緊急用升降機", "避難層"], limit: 1 }, ["第 107 條"]],
   ["search_landuse", { area: "火星" }, ["找不到計畫區"]],
   ["get_landuse", { id: "PF000005000528" }, ["林口特定區計畫", "府都計1150321956號", "#landuse=PF000005000528"]],
   ["get_landuse", { id: "PF000005000528", page: 2 }, ["第 2 頁"]],
@@ -77,7 +79,7 @@ const CASES = [
 const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
 const ver = init.result?.serverInfo?.version;
 check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
-check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions));
+check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions) && /不論日期新舊/.test(init.result?.instructions));
 const tl = await rpc("tools/list", {});
 const names = (tl.result?.tools || []).map((t) => t.name);
 const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "search_landuse", "get_landuse", "check_conflicts", "data_info"];

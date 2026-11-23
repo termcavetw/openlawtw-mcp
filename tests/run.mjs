@@ -57,7 +57,8 @@ const CASES = [
   ["search_minutes", { keywords: ["涼亭", "天幕"], limit: 1 }, ["桃建照字第1050037445號"]],
   ["search_minutes", { keywords: ["二階段", "報備"], limit: 3 }, ["只適用桃園市", "get_minutes"]],
   ["get_minutes", { id: "710" }, ["桃建使字第1050033127號", "93 頁"]],
-  ["get_minutes", { id: "710", page: 3 }, ["第 3 頁"]],
+  ["get_minutes", { id: "710", page: 3 }, ["第 3 頁", "#minutes=710&page=3"]],
+  ["get_minutes", { id: "683" }, ["封面經 OCR 辨識"]],
   ["get_minutes", { id: "不存在" }, ["找不到會議紀錄「不存在」"]],
 ];
 

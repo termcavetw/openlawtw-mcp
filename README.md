@@ -59,4 +59,4 @@ Local: `node scripts/dev-server.js` → `http://localhost:3000/mcp`. Inspect wit
 npm test
 ```
 
-在本機啟動 MCP，用 openlawtw 線上資料呼叫全部 12 支工具並檢查輸出（約 140 項）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**
+在本機啟動 MCP，用 openlawtw 線上資料呼叫全部 14 支工具並檢查輸出（約 180 項）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**

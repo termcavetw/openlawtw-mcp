@@ -60,16 +60,24 @@ const CASES = [
   ["get_minutes", { id: "710" }, ["桃建使字第1050033127號", "93 頁"]],
   ["get_minutes", { id: "710", page: 3 }, ["第 3 頁", "#minutes=710&page=3"]],
   ["get_minutes", { id: "683" }, ["封面經 OCR 辨識"]],
+  ["search_landuse", {}, ["33 個計畫區", "高速鐵路桃園車站特定區計畫"]],
+  ["search_landuse", { area: "青埔" }, ["高速鐵路桃園車站特定區計畫", "新的在前"]],
+  ["search_landuse", { keywords: ["退縮建築"], area: "高鐵", limit: 2 }, ["高速鐵路桃園車站特定區計畫", "get_landuse", "不判斷"]],
+  ["search_landuse", { keywords: ["容積率"], limit: 3 }, ["公告："]],
+  ["search_landuse", { area: "火星" }, ["找不到計畫區"]],
+  ["get_landuse", { id: "PF000005000528" }, ["林口特定區計畫", "府都計1150321956號", "#landuse=PF000005000528"]],
+  ["get_landuse", { id: "PF000005000528", page: 2 }, ["第 2 頁"]],
+  ["get_landuse", { id: "不存在的土管" }, ["找不到土管要點"]],
   ["get_minutes", { id: "不存在" }, ["找不到會議紀錄「不存在」"]],
 ];
 
 const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
 const ver = init.result?.serverInfo?.version;
 check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
-check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions));
+check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions));
 const tl = await rpc("tools/list", {});
 const names = (tl.result?.tools || []).map((t) => t.name);
-const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "check_conflicts", "data_info"];
+const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "search_landuse", "get_landuse", "check_conflicts", "data_info"];
 for (const n of WANT) check(`tools/list 有 ${n}`, names.includes(n));
 for (const t of tl.result?.tools || []) check(`${t.name} 有說明與 inputSchema`, t.description && t.inputSchema?.type === "object");
 check("工具說明沒有過時的「未收」", !(tl.result?.tools || []).some((t) => /公安改善辦法附表一二未收|變使附表三.{0,6}未收/.test(t.description)));

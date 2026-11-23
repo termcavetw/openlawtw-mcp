@@ -2,8 +2,9 @@
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
+import { searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.6.7" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.7.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -13,7 +14,7 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 3. 查不到就說查不到，不要補條號或捏造函釋。
 4. 注意工具印出的 ⚠：條文已修正而函釋較舊、函釋已被停止適用、條文引用已刪除的條文、函告無效、施行日註記。有的話要明白告訴使用者，並優先採用較新的規定與函釋。
 5. 問題涉及特定縣市時，也要查該縣市的規定（region 參數）。
-6. 開挖率、建蔽率、容積率等常寫在各都市計畫的土管要點，本庫未收；經濟部、農業部、消防署及縣市政府函釋也未收。查不到時要說明是收錄範圍的限制。
+6. 開挖率、建蔽率、容積率、退縮、停車等常寫在各都市計畫的土地使用分區管制要點（土管要點）。桃園市的土管要點用 search_landuse／get_landuse 查（497 份、33 個計畫區）：土管要點對該計畫區內基地有拘束力，但每份只是某一次公告，本庫不判斷哪份是現行版本——回答時要寫明計畫區、公告日期與文號，提醒使用者確認基地屬於哪個主要／細部計畫、之後有沒有較新的公告；工具標示「之後還有 N 份公告」時要說出來。OCR 頁的數字（建蔽率、容積率、退縮距離）可能有誤，引用數字前一定要請使用者開原檔核對。其他縣市的土管要點本庫未收；經濟部、農業部、消防署及縣市政府函釋也未收。查不到時要說明是收錄範圍的限制。
 7. 網路資料的用法：條文與函釋以本工具查到的為準。網路文章、新聞、論壇只能當線索；與條文或函釋不一致時，以條文為準，並明白告訴使用者網路說法哪裡錯、錯在哪（例如漏了但書、混用了地方規定）。
 8. 本庫未收錄的內容（土管要點、其他機關或縣市政府函釋、桃園以外縣市的建照工作手冊與法規執行疑義／複核會議紀錄、建築師公會法規研討紀錄、法院判決、最新修法動態）可以上網查（若你有上網工具）。條文就能回答的問題不必上網；遇到下列情況才主動補查：(a) 問題指定縣市，且問的是該縣市實務上怎麼認定（如免計容積、陽臺、花臺、裝飾板）；(b) 條文有但書或模糊處，且本庫查無對應函釋；(c) 使用者問最新修法動態。優先找政府官方網站（.gov.tw），其次是該縣市建築師公會網站轉載的機關公文與會議紀錄；引用時註明來源網站與日期，並說明這部分不是來自 openlawtw。
 9. 來源順位：效力由高到低為 (1) 法律、法規命令與技術規範的條文；(2) 內政部國土管理署（原營建署）函釋，含正式發文的研商會議紀錄；(3) 縣市主管建築機關的函釋、建照工作手冊、審查或複核決議，含機關主持或與公會聯席、由機關作成決議並發文的法規研討／疑義會議紀錄（只適用該縣市）；(4) 建築師公會、學會的講座簡報與實務整理，以及公會自行召開、決議不是由機關作成的會議紀錄（即使由機關轉送）；(5) 一般網路文章、新聞、論壇。回答時每個依據都標明屬於哪一級；較低級的說法和較高級的不一致時，以較高級為準並說明差在哪。第 3 級只能用在該縣市的案子；第 4、5 級只能當實務參考或線索，不能當法源，也不能寫成「依規定」。網路上找到的函釋、會議紀錄、簡報，要找到原文件（發文機關、字號、日期）才能引用；找不到原文就說明「未見原文，僅供參考」。
@@ -85,6 +86,18 @@ const TOOLS = [
     description: "讀一份桃園市法規疑義會議紀錄（id 來自 search_minutes）。不填 page 讀第 1 頁（公文封面，含發文機關、日期、字號）；填 page 讀指定頁全文。只適用桃園市；市府召開並作成決議者屬第 3 級，公會召開、市府只轉送者屬第 4 級（見第 9、11 條）。",
     inputSchema: { type: "object", properties: { id: str("search_minutes 結果裡的 id（也可填標題關鍵字）"), page: { type: "integer", minimum: 1 } }, required: ["id"] },
     annotations: { ...RO, title: "讀桃園市會議紀錄" }, run: getMinutes,
+  },
+  {
+    name: "search_landuse", title: "搜尋桃園市土管要點",
+    description: "搜尋桃園市各都市計畫的土地使用分區管制要點（土管要點）全文：497 份、33 個計畫區（主要計畫與細部計畫，來源桃園市政府都市計畫書圖查詢）。建蔽率、容積率、退縮建築、開挖率、停車、建築高度、獎勵容積等都市計畫區的規定用這個查。area 可填計畫區名稱或常用叫法（如「青埔」「高鐵」「航空城」「南崁」「中壢平鎮」）；只給 area 不給 keywords 會列出該計畫區所有公告（新的在前），用來確認最新一次公告。結果附公告日期與文號，並標示同計畫區之後還有幾份公告。本庫不判斷哪份是現行版本；OCR 頁的數字可能有誤，引用前要開原檔核對。不給參數會列出收錄範圍。",
+    inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字，例如 [\"退縮建築\"]、[\"住宅區\", \"容積率\"]" }, area: str("計畫區名稱或常用叫法（可省略），例如「高速鐵路桃園車站特定區計畫」「青埔」「林口」"), kind: str("主要計畫或細部計畫（可省略）"), limit: { type: "integer", minimum: 1, maximum: 30, default: 8 }, any: { type: "boolean", default: false } }, required: [] },
+    annotations: { ...RO, title: "搜尋桃園市土管要點" }, run: searchLanduse,
+  },
+  {
+    name: "get_landuse", title: "讀桃園市土管要點",
+    description: "讀一份桃園市都市計畫土管要點（id 來自 search_landuse）。不填 page 讀全文（太長會分段），填 page 讀指定頁。附公告日期、文號、計畫書與公告原檔連結，並提示同計畫區之後是否還有較新的公告。",
+    inputSchema: { type: "object", properties: { id: str("search_landuse 結果裡的 id（也可填標題關鍵字）"), page: { type: "integer", minimum: 1 } }, required: ["id"] },
+    annotations: { ...RO, title: "讀桃園市土管要點" }, run: getLanduse,
   },
   {
     name: "check_conflicts", title: "法規衝突檢查",

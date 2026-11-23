@@ -52,3 +52,11 @@ Local: `node scripts/dev-server.js` → `http://localhost:3000/mcp`. Inspect wit
 讓任何支援 MCP 的 AI，回答臺灣建築法規問題前先查 openlawtw 的現行條文與國土署函釋，並附上條號、原文和連結。還會自動標出：函釋已被停止適用、函釋早於條文修正、條文引用了已刪除的條文、函告無效。
 
 資料來自 [openlawtw](https://openlawtw.vercel.app)。有問題或建議，歡迎開 issue，或到 Threads 找 [@termcavetw](https://www.threads.net/@termcavetw)。
+
+## 測試
+
+```
+npm test
+```
+
+在本機啟動 MCP，用 openlawtw 線上資料呼叫全部 12 支工具並檢查輸出（約 140 項）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**

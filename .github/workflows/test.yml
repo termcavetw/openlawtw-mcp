@@ -1,0 +1,18 @@
+name: test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 1 * * *" # 每天 09:17（台北）用線上資料跑一次，抓上游資料格式變動
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm test

@@ -1,0 +1,86 @@
+// openlawtw-mcp 回歸測試：在本機啟動 api/mcp.js，用 JSON-RPC 呼叫全部工具並檢查輸出。
+// 讀 openlawtw 線上資料（OPENLAW_BASE 可改），不需要任何套件。用法：npm test
+import http from "node:http";
+import handler from "../api/mcp.js";
+
+const server = http.createServer((req, res) => handler(req, res));
+await new Promise((r) => server.listen(0, r));
+const URL_ = `http://127.0.0.1:${server.address().port}/mcp`;
+let seq = 0;
+async function rpc(method, params) {
+  const r = await fetch(URL_, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: ++seq, method, params }) });
+  const raw = await r.text();
+  const line = raw.startsWith("{") ? raw : raw.split("\n").find((l) => l.startsWith("data:"))?.slice(5);
+  return JSON.parse(line);
+}
+async function call(name, args = {}) {
+  const j = await rpc("tools/call", { name, arguments: args });
+  if (j.error) return { isError: true, text: JSON.stringify(j.error) };
+  return { isError: !!j.result.isError, text: j.result.content.map((c) => c.text).join("\n") };
+}
+
+let fail = 0, pass = 0;
+function check(label, cond, detail = "") {
+  if (cond) { pass++; return; }
+  fail++; console.log(`✗ ${label}${detail ? "\n    " + String(detail).slice(0, 300).replace(/\n/g, "⏎") : ""}`);
+}
+// name, args, [必須出現的字串…], {error: 預期 isError, not: [不可出現的字串]}
+const CASES = [
+  ["data_info", {}, ["openlawtw 資料版本", "最近同步", "桃園市法規疑義會議紀錄"]],
+  ["find_law", { query: "危老" }, ["都市危險及老舊建築物"]],
+  ["find_law", { query: "桃園市 建築管理" }, ["桃園市"]],
+  ["get_article", { law: "設計施工編", articles: ["107"] }, ["第 107 條", "緊急用昇降機"]],
+  ["get_article", { law: "設計施工編", articles: ["第一百十條"] }, ["第 110 條"]],
+  ["get_article", { law: "變使", articles: ["2"] }, ["建築物使用類組及變更使用辦法"]],
+  ["get_article", { law: "不存在的法", articles: ["1"] }, ["找不到法規「不存在的法」"]],
+  ["list_articles", { law: "建築法" }, ["第 1 條"]],
+  ["search_articles", { keywords: ["緊急用昇降機", "避難層"], limit: 2 }, ["設計施工編"]],
+  ["search_articles", { keywords: ["停車"], region: "桃園市", limit: 2 }, ["桃園市"]],
+  ["search_rulings", { law: "設計施工編", article: "107", limit: 2 }, ["號"]],
+  ["search_rulings", { keywords: ["機車停車", "容積"], limit: 2 }, ["號"]],
+  ["get_ruling", { id: "13878" }, ["營署建管字第1100008822號", "2021-03-18"]],
+  ["get_ruling", { id: "16041" }, ["日期不明"]],
+  ["check_conflicts", { law: "設計施工編" }, ["設計施工編"]],
+  ["check_conflicts", { law: "建築法", region: "臺北市" }, ["建築法"], { not: ["法定空地"] }],
+  ["search_documents", { keywords: ["機車", "無障礙"], limit: 2 }, ["無障礙"]],
+  ["get_document", { document: "無障礙規範", section: "805" }, ["805"]],
+  ["get_document", { document: "構造編", section: "第17條 表" }, ["活載重"]],
+  ["get_document", { document: "變使", section: "附表二 B-3" }, ["B-3"]],
+  ["get_document", { document: "變使", section: "附表三 B-3" }, ["變更為 B-3", "☆"]],
+  ["get_document", { document: "原有合法建築物公共安全改善辦法", section: "附表一 B-3" }, ["B-3", "內部裝修材料"]],
+  ["get_document", { document: "非都管制規則", section: "附表一 丁種建築用地" }, ["第一欄含「丁種建築用地」", "廠房或相關生產設施"]],
+  ["get_document", { document: "非都管制規則", section: "附表三 表" }, ["窯業用地｜", "特定專用區", "人工"]],
+  ["get_document", { document: "非都管制規則", section: "附表一 28" }, ["丁種建築用地"]],
+  ["get_document", { document: "非都管制規則", section: "附表九" }, ["沒有「附表九」"]],
+  ["get_document", { document: "多目標", section: "附表 兒童遊樂場" }, ["地下作停車場及電信設施使用。｜1.應面臨寬度八公尺"]],
+  ["search_minutes", {}, ["共 ", "份", "102年"]],
+  ["search_minutes", { keywords: ["涼亭", "天幕"], limit: 1 }, ["桃建照字第1050037445號"]],
+  ["search_minutes", { keywords: ["二階段", "報備"], limit: 3 }, ["只適用桃園市", "get_minutes"]],
+  ["get_minutes", { id: "710" }, ["桃建使字第1050033127號", "93 頁"]],
+  ["get_minutes", { id: "710", page: 3 }, ["第 3 頁"]],
+  ["get_minutes", { id: "不存在" }, ["找不到會議紀錄「不存在」"]],
+];
+
+const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
+const ver = init.result?.serverInfo?.version;
+check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
+check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions));
+const tl = await rpc("tools/list", {});
+const names = (tl.result?.tools || []).map((t) => t.name);
+const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "check_conflicts", "data_info"];
+for (const n of WANT) check(`tools/list 有 ${n}`, names.includes(n));
+for (const t of tl.result?.tools || []) check(`${t.name} 有說明與 inputSchema`, t.description && t.inputSchema?.type === "object");
+check("工具說明沒有過時的「未收」", !(tl.result?.tools || []).some((t) => /公安改善辦法附表一二未收|變使附表三.{0,6}未收/.test(t.description)));
+
+for (const [name, args, want, opt = {}] of CASES) {
+  const label = `${name} ${JSON.stringify(args)}`;
+  let r;
+  try { r = await call(name, args); } catch (e) { check(label + " 執行", false, e.stack); continue; }
+  check(label + ` isError=${!!opt.error}`, r.isError === !!opt.error, r.text);
+  for (const w of want) check(label + ` 含「${w}」`, r.text.includes(w), r.text);
+  for (const w of opt.not || []) check(label + ` 不含「${w}」`, !r.text.includes(w), r.text);
+  check(label + " 非空", r.text.trim().length > 0);
+}
+server.close();
+console.log(`\nopenlawtw-mcp v${ver}：${pass} 項通過，${fail} 項失敗`);
+process.exit(fail ? 1 : 0);

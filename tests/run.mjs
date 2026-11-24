@@ -26,7 +26,7 @@ function check(label, cond, detail = "") {
 }
 // name, args, [必須出現的字串…], {error: 預期 isError, not: [不可出現的字串]}
 const CASES = [
-  ["data_info", {}, ["openlawtw 資料版本", "最近同步", "桃園市法規疑義會議紀錄"]],
+  ["data_info", {}, ["openlawtw 資料版本", "最近同步", "桃園市法規疑義會議紀錄", "農業部（農地農舍）函釋"], { not: ["經濟部、農業部"] }],
   ["find_law", { query: "危老" }, ["都市危險及老舊建築物"]],
   ["find_law", { query: "桃園市 建築管理" }, ["桃園市"]],
   ["get_article", { law: "設計施工編", articles: ["107"] }, ["第 107 條", "緊急用昇降機"]],
@@ -69,6 +69,11 @@ const CASES = [
   ["search_minutes", { keywords: ["陽台", "露臺"], limit: 1 }, ["份符合"]],
   ["search_minutes", { keywords: ["緊急升降機"], limit: 1 }, ["不論新舊都以條文與函釋為準"]],
   ["search_articles", { keywords: ["緊急用升降機", "避難層"], limit: 1 }, ["第 107 條"]],
+  ["search_rulings", { keywords: ["資材室"], source: "農業部", limit: 2 }, ["農業部（農地農舍）函釋符合", "agri:"]],
+  ["search_rulings", { keywords: ["農舍", "套繪"], limit: 2 }, ["國土署函釋符合", "農業部（農地農舍）函釋符合"]],
+  ["search_rulings", { law: "農業用地興建農舍辦法", limit: 2 }, ["農業部（農地農舍）函釋符合"]],
+  ["get_ruling", { id: "agri:6123" }, ["農保規字第1152611951號", "第 2 級"]],
+  ["get_ruling", { id: "agri:99999999" }, ["找不到農業部函釋"]],
   ["search_landuse", { area: "火星" }, ["找不到計畫區"]],
   ["get_landuse", { id: "PF000005000528" }, ["林口特定區計畫", "府都計1150321956號", "#landuse=PF000005000528"]],
   ["get_landuse", { id: "PF000005000528", page: 2 }, ["第 2 頁"]],
@@ -84,7 +89,7 @@ for (const it of EVAL.items) for (const c of it.calls) CASES.push([c.tool, c.arg
 const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
 const ver = init.result?.serverInfo?.version;
 check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
-check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions) && /不論日期新舊/.test(init.result?.instructions));
+check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions) && /不論日期新舊/.test(init.result?.instructions) && /農業部（農地農舍）函釋有收/.test(init.result?.instructions));
 const tl = await rpc("tools/list", {});
 const names = (tl.result?.tools || []).map((t) => t.name);
 const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "search_landuse", "get_landuse", "check_conflicts", "data_info"];

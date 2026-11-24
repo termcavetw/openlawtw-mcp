@@ -1,10 +1,11 @@
 // openlawtw MCP server — Streamable HTTP transport, stateless, JSON responses.
 // Deploy on Vercel: this file is served at /api/mcp (vercel.json also maps /mcp here).
+import { fold } from "../lib/fold.js";
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 import { searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.8.5" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.8.6" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -148,7 +149,12 @@ async function handleMessage(msg) {
       const tool = TOOLS.find((t) => t.name === params.name);
       if (!tool) return fail(id, -32602, `Unknown tool: ${params.name}`);
       try {
-        const text = await tool.run(params.arguments || {});
+        const args = { ...(params.arguments || {}) };
+        const miss = (tool.inputSchema?.required || []).filter((k) => args[k] === undefined || args[k] === null || args[k] === "" || (Array.isArray(args[k]) && !args[k].length));
+        if (miss.length) return ok(id, { content: [{ type: "text", text: `缺少必填參數：${miss.join("、")}。請補上後再呼叫 ${tool.name}。` }], isError: true });
+        // 縣市名稱「台／臺」通用（臺北市、臺中市、臺南市、臺東縣）
+        if (typeof args.region === "string") args.region = args.region.split(/[,，]/).map((r) => fold(r.trim())).join(",");
+        const text = await tool.run(args);
         return ok(id, { content: [{ type: "text", text }], isError: false });
       } catch (e) {
         return ok(id, { content: [{ type: "text", text: `查詢失敗：${e.message}。請告訴使用者目前無法查詢，不要改憑記憶回答。` }], isError: true });

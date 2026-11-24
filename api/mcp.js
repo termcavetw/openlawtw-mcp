@@ -4,7 +4,7 @@ import { searchDocuments, getDocument, findLaw, getArticle, listArticles, search
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 import { searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.8.1" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.8.2" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -53,13 +53,13 @@ const TOOLS = [
   },
   {
     name: "search_rulings", title: "搜尋函釋",
-    description: "搜尋函釋：內政部國土管理署（原營建署）函釋，以及農業部（原農委會）就農業發展條例、農業用地興建農舍辦法、農業設施容許使用、農業使用證明等的解釋函／令（1,700 多則，來源農村發展及水土保持署農地及農舍法規檢索系統）。可依法規與條號篩選，或用關鍵字搜標題與全文，依日期新到舊。預設兩種都搜（農業部最多列 5 則），source 可限定「國土署」或「農業部」。每則會標出 ⚠：已被後來的函釋停止適用、或早於所涉條文的修正日。",
+    description: "搜尋函釋：內政部國土管理署（原營建署）函釋，以及農業部（原農委會）就農業發展條例、農業用地興建農舍辦法、農業設施容許使用、農業使用證明等的解釋函／令（1,700 多則，來源農村發展及水土保持署農地及農舍法規檢索系統）。可依法規與條號篩選，或用關鍵字搜標題與全文，依日期新到舊。預設兩種都搜；關鍵字或法規涉及農舍、套繪、農地、農業設施等時，農業部函釋列在前面且不截短，其他問題農業部最多列 5 則（結果會提示還有幾則）。source 可限定「國土署」或「農業部」。每則會標出 ⚠：已被後來的函釋停止適用、或早於所涉條文的修正日。",
     inputSchema: { type: "object", properties: { keywords: { type: "array", items: { type: "string" }, description: "關鍵字（可省略）" }, law: str("限定法規（名稱、簡稱或 ID）"), article: str("限定條號，需搭配 law"), source: str("限定來源：國土署、農業部或全部（可省略，預設全部）"), limit: { type: "integer", minimum: 1, maximum: 50, default: 10 } } },
     annotations: { ...RO, title: "搜尋函釋" }, run: searchRulings,
   },
   {
     name: "get_ruling", title: "讀函釋",
-    description: "讀取一則函釋全文（用 search_rulings 結果裡的 id），含字號、日期、涉及條文與停止適用／條文已修正警告。",
+    description: "讀取一則函釋全文（用 search_rulings 結果裡的 id），含字號、日期、涉及條文與停止適用／條文已修正警告，並列出本函引用的其他函：本庫有收的給 id，沒收的標「被引用但本庫未收錄」。",
     inputSchema: { type: "object", properties: { id: str("函釋 id，例如 13672；農業部函釋用 agri:6123") }, required: ["id"] },
     annotations: { ...RO, title: "讀函釋" }, run: getRuling,
   },

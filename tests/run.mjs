@@ -62,6 +62,7 @@ const CASES = [
   ["get_minutes", { id: "683" }, ["封面經 OCR 辨識"]],
   ["get_minutes", { id: "1056" }, ["發文機關：桃園市政府　", "陳副處長育時"], { not: ["民政局　發文日期"] }],
   ["get_minutes", { id: "959" }, ["公文主旨寫明由市府召開"]],
+  ["get_minutes", { id: "985", page: 7 }, ["陽台二公尺免計容積深度基準線"], { not: ["掃描頁的表格"] }],
   ["search_landuse", { keywords: ["法定空地"], limit: 1 }, ["份符合"]],
   ["search_landuse", {}, ["33 個計畫區", "高速鐵路桃園車站特定區計畫"]],
   ["search_landuse", { area: "青埔" }, ["高速鐵路桃園車站特定區計畫", "新的在前"]],

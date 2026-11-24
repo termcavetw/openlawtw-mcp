@@ -93,7 +93,7 @@ for (const it of EVAL.items) for (const c of it.calls) CASES.push([c.tool, c.arg
 const init = await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
 const ver = init.result?.serverInfo?.version;
 check("initialize 有版本號", /^\d+\.\d+\.\d+$/.test(ver || ""), JSON.stringify(init).slice(0, 200));
-check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions) && /不論日期新舊/.test(init.result?.instructions) && /農業部（農地農舍）函釋有收/.test(init.result?.instructions));
+check("instructions 有來源順位與會議紀錄規則", /來源順位/.test(init.result?.instructions) && /search_minutes/.test(init.result?.instructions) && /search_landuse/.test(init.result?.instructions) && /不論日期新舊/.test(init.result?.instructions) && /農業部（農地農舍）函釋有收/.test(init.result?.instructions) && /建管同意解除套繪不代表地政會准分割/.test(init.result?.instructions));
 const tl = await rpc("tools/list", {});
 const names = (tl.result?.tools || []).map((t) => t.name);
 const WANT = ["find_law", "get_article", "list_articles", "search_articles", "search_rulings", "get_ruling", "search_documents", "get_document", "search_minutes", "get_minutes", "search_landuse", "get_landuse", "check_conflicts", "data_info"];

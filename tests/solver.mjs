@@ -30,7 +30,9 @@ T("water 9999", { group: "G-2", F: 10, typ: 999.9 }, "gr-water", false);
 T("pv G2", { group: "G-2", F: 5, typ: 1000 }, "gr-pv", true);
 T("pv H2", { group: "H-2", F: 5, typ: 1000 }, "gr-pv", "info");
 T("99 B2 5F", { group: "B-2", F: 5, typ: 800 }, "e99", true);
-T("struct B4", { group: "H-2", F: 8, B: 4, typ: 500 }, "t-struct", true);
+T("struct B4", { group: "H-2", F: 8, B: 4, typ: 500, ty: true }, "t-struct", true);
+ok("未指定桃園市 → 不列桃園地方規定", !solve({ group: "H-2", F: 8, B: 4, typ: 500, site: 2000 }).out.some((x) => x.cat === "桃園地方規定"));
+{ const rd = radar({ group: "H-2", F: 5, typ: 230, site: 420, H: 16 }); ok("雷達未指定桃園市 → 不出現桃園綠化", !rd.some((x) => (x.items || x.changes || []).some?.((y) => /桃園/.test(JSON.stringify(y)))) && !/桃園市建築基地綠化/.test(JSON.stringify(rd))); }
 T("96 3F H2 exempt", { group: "H-2", F: 3, typ: 80 }, "e96", false);
 T("96-1 3F H2", { group: "H-2", F: 3, typ: 80 }, "e96-1", true);
 T("96 5F H2 exempt", { group: "H-2", F: 5, typ: 230 }, "e96", false);

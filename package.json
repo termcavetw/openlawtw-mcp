@@ -9,6 +9,6 @@
   },
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "test": "node --check api/mcp.js && node --check lib/openlaw.js && node --check lib/minutes-tools.js && node --check lib/landuse-tools.js && node --check lib/fold.js && node --check lib/attachments.js && node tests/run.mjs"
+    "test": "node --check api/mcp.js && node --check lib/openlaw.js && node --check lib/minutes-tools.js && node --check lib/landuse-tools.js && node --check lib/fold.js && node --check lib/attachments.js && node --check lib/tables.js && node tests/tables.mjs && node tests/run.mjs"
   }
 }

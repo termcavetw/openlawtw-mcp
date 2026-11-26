@@ -84,7 +84,7 @@ T("KTV 4F 每層 350 → 撒水（甲類第 1 目 300㎡）", { group: "B-1", F:
 T("餐廳 4F 每層 1000 → 不必撒水（甲類其他目 1,500㎡）", { group: "B-3", F: 4, typ: 1000 }, "f17", false);
 T("商場 4F 每層 1600 → 撒水", { group: "B-2", F: 4, typ: 1600 }, "f17", true);
 { const rd = radar({ group: "H-2", F: 5, typ: 230, site: 420, H: 16 }); ok("雷達掃高度 20m 與 50 戶", rd.some((x) => /超過 20 m/.test(x.label)) && rd.some((x) => /50 戶/.test(x.label)), rd.map((x) => x.label)); }
-T("窯業用地 4F 120 → 不適用第十四章（營署 1030016698）", { group: "C-2", F: 4, typ: 120, urban: false, zoneTxt: "窯業用地" }, "i269", false);
+T("窯業用地 4F 120 → 不適用第十四章", { group: "C-2", F: 4, typ: 120, urban: false, zoneTxt: "窯業用地" }, "i269", false);
 T("丁種建築用地工廠 → 適用第十四章", { group: "C-2", F: 2, typ: 400, urban: false, zoneTxt: "丁種建築用地" }, "i269", true);
 T("都市計畫工業區工廠 → 適用第十四章", { group: "C-2", F: 2, typ: 400, zoneTxt: "乙種工業區" }, "i269", true);
 T("都市計畫農業區工廠 → 不適用第十四章", { group: "C-2", F: 2, typ: 400, zoneTxt: "農業區" }, "i269", false);

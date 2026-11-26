@@ -1,7 +1,9 @@
 // openlawtw-mcp 回歸測試：在本機啟動 api/mcp.js，用 JSON-RPC 呼叫全部工具並檢查輸出。
 // 讀 openlawtw 線上資料（OPENLAW_BASE 可改），不需要任何套件。用法：npm test
 import http from "node:http";
-import handler from "../api/mcp.js";
+// 測試會連續打幾百次，放寬每分鐘上限（線上仍是預設 120）
+process.env.RATE_LIMIT_PER_MIN ||= "100000";
+const { default: handler } = await import("../api/mcp.js");
 
 const server = http.createServer((req, res) => handler(req, res));
 await new Promise((r) => server.listen(0, r));
@@ -62,6 +64,11 @@ const CASES = [
   ["get_minutes", { id: "683" }, ["封面經 OCR 辨識"]],
   ["get_minutes", { id: "1056" }, ["發文機關：桃園市政府　", "陳副處長育時"], { not: ["民政局　發文日期"] }],
   ["get_minutes", { id: "959" }, ["公文主旨寫明由市府召開"]],
+  ["search_rulings", { keywords: ["臺北市", "山坡地"], limit: 2 }, ["臺北市政府解釋令函符合", "taipei:FE400046"]],
+  ["search_rulings", { keywords: ["山坡地"], source: "台北市", limit: 1 }, ["只適用臺北市"]],
+  ["search_rulings", { keywords: ["陽臺"], limit: 2 }, ["國土署函釋符合"], { not: ["臺北市政府解釋令函符合"] }],
+  ["get_ruling", { id: "taipei:FE400046" }, ["府授都設字第1153061485號函", "第 3 級"]],
+  ["data_info", {}, ["臺北市解釋令函：search_rulings source=\"臺北市\""]],
   ["landuse_points", { area: "航空城", point: "27" }, ["第二十七點：共 2 個版本", "PF000005000450", "臨接 30m 以上計畫道路"]],
   ["landuse_points", { area: "青埔", point: "24" }, ["PF000005000457", "應退縮三‧五公尺以上建築"]],
   ["landuse_points", { area: "青埔" }, ["第六點（12 版）最新 2024-02-01", "第二十六點（9 版）最新 2024-02-01"]],

@@ -19,6 +19,6 @@ li{margin:6px 0;line-height:1.6}a{color:#1F3A5F}small{color:#5C6577}</style></he
 <li>資料：<a href="https://law.termcavetw.com">openlawtw</a>（中央與 22 縣市法規、國土署函釋，每週同步）</li>
 <li>個案適用以主管建築機關審查為準。</li>
 </ul>
-<p><small>termcave · Threads <a href="https://www.threads.net/@termcavetw">@termcavetw</a></small></p>
+<p><small><a href="https://termcavetw.com">termcave 的其他作品 ↗</a> · Threads <a href="https://www.threads.net/@termcavetw">@termcavetw</a></small></p>
 </main></body></html>`);
 }

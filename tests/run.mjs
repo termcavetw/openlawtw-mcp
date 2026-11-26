@@ -76,6 +76,8 @@ const CASES = [
   ["search_rulings", { keywords: ["共用月租套房", "消防安全設備"], limit: 2 }, ["消防問題：消防署函釋列在最前面", "nfa:bb23dbab0b71"]],
   ["search_rulings", { law: "各類場所消防安全設備設置標準", article: "12", source: "消防署", limit: 1 }, ["各類場所消防安全設備設置標準 第 12 條", "source=\"消防署\""]],
   ["get_ruling", { id: "nfa:f30da5981b27" }, ["已停止適用／廢止，不能當依據"]],
+  ["check_building", { group: "C-2", floors: 4, typical_floor_area: 120, urban_plan: false, land_use: "窯業用地", category: "工廠類建築物" }, ["窯業用地：第 269 條只規定非都市土地丁種建築用地內的工廠適用第十四章"]],
+  ["check_building", { group: "C-2", floors: 4, typical_floor_area: 120, zone: "乙種工業區", category: "工廠類建築物" }, ["120 ㎡ < 150㎡，不符", "營署建管字第1030016698號函"]],
   ["get_ruling", { id: "nfa:b3da56b6baef" }, ["消防法第42-3條於 2024-11-29 修正，晚於本函"]],
   ["get_ruling", { id: "agri:36" }, ["農業發展條例第16條於 2016-11-30 修正，晚於本函"]],
   ["get_ruling", { id: "central:FE355465" }, ["第33條於 2025-12-31 修正，晚於本函"]],

@@ -54,7 +54,7 @@ T("f28 H-2 5F 不觸發", { group: "H-2", F: 5, typ: 500 }, "f28", false);
 ok("H 51m 屬高層", solve({ group: "H-2", F: 15, B: 3, typ: 620, H: 51 }).c.high === true);
 { const p = solve({ group: "H-2", F: 7, typ: 400, site: 900 }).out.find((o) => o.id === "p59"); ok("法定停車 16 輛", /16 輛/.test(JSON.stringify(p.calc)), p.calc); }
 { const rd = radar({ group: "H-2", F: 5, B: 1, typ: 230, site: 420 }); const up = rd.find((x) => /加到 6 層/.test(x.label)); ok("雷達 5→6 層多出昇降機與防空避難", up && ["l55", "p141", "e96"].every((id) => up.ch.some((c) => c.id === id)), up && up.ch.map((c) => c.id)); }
-ok("規則 59 條", R.length === 59, R.length);
+ok("規則 60 條", R.length === 60, R.length);
 // 2026-11-27：混合用途、供公眾判定、無障礙廁所、消防甲類逐層
 { const r = solve({ group: "C-2", F: 4, typ: 120 }); const o = (id) => r.out.find((x) => x.id === id);
   ok("窯業廠房 4F×120：應為防火構造", o("fp69").on === true);
@@ -84,6 +84,13 @@ T("KTV 4F 每層 350 → 撒水（甲類第 1 目 300㎡）", { group: "B-1", F:
 T("餐廳 4F 每層 1000 → 不必撒水（甲類其他目 1,500㎡）", { group: "B-3", F: 4, typ: 1000 }, "f17", false);
 T("商場 4F 每層 1600 → 撒水", { group: "B-2", F: 4, typ: 1600 }, "f17", true);
 { const rd = radar({ group: "H-2", F: 5, typ: 230, site: 420, H: 16 }); ok("雷達掃高度 20m 與 50 戶", rd.some((x) => /超過 20 m/.test(x.label)) && rd.some((x) => /50 戶/.test(x.label)), rd.map((x) => x.label)); }
+T("窯業用地 4F 120 → 不適用第十四章（營署 1030016698）", { group: "C-2", F: 4, typ: 120, urban: false, zoneTxt: "窯業用地" }, "i269", false);
+T("丁種建築用地工廠 → 適用第十四章", { group: "C-2", F: 2, typ: 400, urban: false, zoneTxt: "丁種建築用地" }, "i269", true);
+T("都市計畫工業區工廠 → 適用第十四章", { group: "C-2", F: 2, typ: 400, zoneTxt: "乙種工業區" }, "i269", true);
+T("都市計畫農業區工廠 → 不適用第十四章", { group: "C-2", F: 2, typ: 400, zoneTxt: "農業區" }, "i269", false);
+T("工廠未填分區 → 第十四章需確認", { group: "C-2", F: 2, typ: 400 }, "i269", "info");
+T("倉庫 → 第十四章不列", { group: "C-2", F: 2, typ: 400, ind: "warehouse", zoneTxt: "乙種工業區" }, "i269", false);
+{ const o = solve({ group: "C-2", F: 4, typ: 120, zoneTxt: "乙種工業區" }).out.find((x) => x.id === "i269"); ok("工業區作業廠房單層 120 < 150 → 標不符", o.on === true && o.lvl === "!", o); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

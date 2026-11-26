@@ -1,6 +1,6 @@
 // Landing page: tells people what this endpoint is and how to connect.
 export default function handler(req, res) {
-  const host = req.headers["x-forwarded-host"] || req.headers.host || "openlawtw-mcp.vercel.app";
+  const host = req.headers["x-forwarded-host"] || req.headers.host || "mcp.termcavetw.com";
   const url = `https://${host}/mcp`;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.end(`<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -16,7 +16,7 @@ li{margin:6px 0;line-height:1.6}a{color:#1F3A5F}small{color:#5C6577}</style></he
 <code>${url}</code>
 <ul>
 <li>工具：找法規、讀條文、章節目錄、搜尋條文、搜尋函釋、讀函釋、法規衝突檢查、資料版本</li>
-<li>資料：<a href="https://openlawtw.vercel.app">openlawtw</a>（中央與 22 縣市法規、國土署函釋，每週同步）</li>
+<li>資料：<a href="https://law.termcavetw.com">openlawtw</a>（中央與 22 縣市法規、國土署函釋，每週同步）</li>
 <li>個案適用以主管建築機關審查為準。</li>
 </ul>
 <p><small>termcave · Threads <a href="https://www.threads.net/@termcavetw">@termcavetw</a></small></p>

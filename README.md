@@ -1,6 +1,6 @@
 # openlawtw MCP — Taiwan building law for any AI
 
-An MCP server that lets Claude, Gemini CLI, Cursor and other MCP clients look up **current Taiwanese building, planning and land-use law** and **National Land Management Agency rulings (函釋)** from [openlawtw](https://openlawtw.vercel.app), with article numbers, quotes and links.
+An MCP server that lets Claude, Gemini CLI, Cursor and other MCP clients look up **current Taiwanese building, planning and land-use law** and **National Land Management Agency rulings (函釋)** from [openlawtw](https://law.termcavetw.com), with article numbers, quotes and links.
 
 ## Connect
 
@@ -41,7 +41,7 @@ The server also sends **instructions** to the client on connect: look things up 
 2. In Vercel: **Add New → Project → Import** the repo → **Deploy** (no settings, no environment variables, no build step).
 3. Your endpoint is `https://<project>.vercel.app/mcp`.
 
-Optional environment variables: `OPENLAW_BASE` (data host, default `https://openlawtw.vercel.app`), `RATE_LIMIT_PER_MIN` (default 120 per IP per instance).
+Optional environment variables: `OPENLAW_BASE` (data host, default `https://law.termcavetw.com`), `RATE_LIMIT_PER_MIN` (default 120 per IP per instance).
 
 Local: `node scripts/dev-server.js` → `http://localhost:3000/mcp`. Inspect with `npx @modelcontextprotocol/inspector`.
 
@@ -51,7 +51,7 @@ Local: `node scripts/dev-server.js` → `http://localhost:3000/mcp`. Inspect wit
 
 讓任何支援 MCP 的 AI，回答臺灣建築法規問題前先查 openlawtw 的現行條文與國土署函釋，並附上條號、原文和連結。還會自動標出：函釋已被停止適用、函釋早於條文修正、條文引用了已刪除的條文、函告無效。
 
-資料來自 [openlawtw](https://openlawtw.vercel.app)。有問題或建議，歡迎開 issue，或到 Threads 找 [@termcavetw](https://www.threads.net/@termcavetw)。
+資料來自 [openlawtw](https://law.termcavetw.com)。有問題或建議，歡迎開 issue，或到 Threads 找 [@termcavetw](https://www.threads.net/@termcavetw)。
 
 ## 測試
 

@@ -54,7 +54,36 @@ T("f28 H-2 5F 不觸發", { group: "H-2", F: 5, typ: 500 }, "f28", false);
 ok("H 51m 屬高層", solve({ group: "H-2", F: 15, B: 3, typ: 620, H: 51 }).c.high === true);
 { const p = solve({ group: "H-2", F: 7, typ: 400, site: 900 }).out.find((o) => o.id === "p59"); ok("法定停車 16 輛", /16 輛/.test(JSON.stringify(p.calc)), p.calc); }
 { const rd = radar({ group: "H-2", F: 5, B: 1, typ: 230, site: 420 }); const up = rd.find((x) => /加到 6 層/.test(x.label)); ok("雷達 5→6 層多出昇降機與防空避難", up && ["l55", "p141", "e96"].every((id) => up.ch.some((c) => c.id === id)), up && up.ch.map((c) => c.id)); }
-ok("規則 57 條", R.length === 57, R.length);
+ok("規則 59 條", R.length === 59, R.length);
+// 2026-11-27：混合用途、供公眾判定、無障礙廁所、消防甲類逐層
+{ const r = solve({ group: "C-2", F: 4, typ: 120 }); const o = (id) => r.out.find((x) => x.id === id);
+  ok("窯業廠房 4F×120：應為防火構造", o("fp69").on === true);
+  ok("窯業廠房：都市計畫內作業廠房 ≥200㎡ 屬供公眾使用", r.c.pub === true, r.c.pubList);
+  ok("窯業廠房：不是第 170 條公共建築物", o("a170").on === false && r.c.pubBldg === false);
+  ok("窯業廠房：無障礙廁所 1 處", o("a167-3").on === true && o("a167-3").lvl === "1", o("a167-3").calc);
+  ok("窯業廠房：二層以上作業廠房要無障礙通路", o("a167-1").on === true);
+  ok("窯業廠房：消防丁類、5 層以下 120㎡ 不設室內消防栓", o("f15").on === false); }
+T("工廠都市計畫外 480㎡ 未填用電 → 需確認供公眾", { group: "C-2", F: 4, typ: 120, urban: false }, "p141", false);
+ok("工廠都市計畫外 480㎡ 用電 80kW → 供公眾", solve({ group: "C-2", F: 4, typ: 120, urban: false, kw: 80 }).c.pub === true);
+ok("倉庫 280㎡ → 非供公眾", solve({ group: "C-2", F: 2, typ: 140, ind: "warehouse" }).c.pub === false);
+ok("餐廳 2F×150 =300 → 供公眾", solve({ group: "B-3", F: 2, typ: 150 }).c.pub === true);
+ok("5F 集合住宅 → 非供公眾", solve({ group: "H-2", F: 5, typ: 200 }).c.pub === false);
+T("工廠 2F 1600 → 不因 1,500㎡ 要防火構造", { group: "C-2", F: 2, typ: 800 }, "fp69", false);
+T("倉庫 2F 1600 → 要防火構造", { group: "C-2", F: 2, typ: 800, ind: "warehouse" }, "fp69", true);
+T("無障礙廁所 7F 各 600 → 2 處", { group: "G-2", F: 7, typ: 600 }, "a167-3", true);
+ok("無障礙廁所 7F 各 600 數量", solve({ group: "G-2", F: 7, typ: 600 }).out.find((x) => x.id === "a167-3").lvl === "3");
+T("住宅不檢討無障礙廁所", { group: "H-2", F: 7, typ: 600 }, "a167-3", false);
+// 混合用途
+{ const r = solve({ group: "H-2", F: 5, typ: 230, uses: [{ group: "G-3", floors: "1" }] }); const o = (id) => r.out.find((x) => x.id === id);
+  ok("1F 店面＋住宅：第 96-1 條不適用", o("e96-1").on === "info" && o("e96").on === true);
+  ok("1F 店面＋住宅：要檢討無障礙廁所", o("a167-3").on === true);
+  ok("1F 店面＋住宅：停車分類合併計算", /合併/.test(JSON.stringify(o("p59").calc)), o("p59").calc); }
+{ const r = solve({ group: "H-2", F: 12, typ: 600, uses: [{ group: "B-3", floors: "1" }] });
+  ok("12F 住宅 1F 餐廳：戊類第 1 目、11 層以上建築物全棟撒水", r.c.klass === "戊1" && r.out.find((x) => x.id === "f17").lvl === "all"); }
+T("KTV 4F 每層 350 → 撒水（甲類第 1 目 300㎡）", { group: "B-1", F: 4, typ: 350 }, "f17", true);
+T("餐廳 4F 每層 1000 → 不必撒水（甲類其他目 1,500㎡）", { group: "B-3", F: 4, typ: 1000 }, "f17", false);
+T("商場 4F 每層 1600 → 撒水", { group: "B-2", F: 4, typ: 1600 }, "f17", true);
+{ const rd = radar({ group: "H-2", F: 5, typ: 230, site: 420, H: 16 }); ok("雷達掃高度 20m 與 50 戶", rd.some((x) => /超過 20 m/.test(x.label)) && rd.some((x) => /50 戶/.test(x.label)), rd.map((x) => x.label)); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

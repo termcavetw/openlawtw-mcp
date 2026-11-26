@@ -91,6 +91,8 @@ T("都市計畫農業區工廠 → 不適用第十四章", { group: "C-2", F: 2,
 T("工廠未填分區 → 第十四章需確認", { group: "C-2", F: 2, typ: 400 }, "i269", "info");
 T("倉庫 → 第十四章不列", { group: "C-2", F: 2, typ: 400, ind: "warehouse", zoneTxt: "乙種工業區" }, "i269", false);
 { const o = solve({ group: "C-2", F: 4, typ: 120, zoneTxt: "乙種工業區" }).out.find((x) => x.id === "i269"); ok("工業區作業廠房單層 120 < 150 → 標不符", o.on === true && o.lvl === "!", o); }
+{ const o = solve({ F: 7, typ: 300, uses: [{ group: "B-3", floors: "1" }, { group: "H-2", floors: "2-7" }] }).out.find((x) => x.id === "e93"); ok("1F 餐廳＋住宅：步行距離以 2F 以上的住宅 50 m 檢討", o.lvl === "50", o); }
+{ const o = solve({ F: 4, typ: 300, uses: [{ group: "B-3", floors: "1-2" }, { group: "H-2", floors: "3-4" }] }).out.find((x) => x.id === "e93"); ok("2F 也是餐廳：步行距離 30 m", o.lvl === "30", o); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

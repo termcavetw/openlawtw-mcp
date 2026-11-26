@@ -1,9 +1,18 @@
 {
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- api lib package.json vercel.json",
   "rewrites": [
-    { "source": "/mcp", "destination": "/api/mcp" },
-    { "source": "/", "destination": "/api/index" }
+    {
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/",
+      "destination": "/api/index"
+    }
   ],
   "functions": {
-    "api/*.js": { "maxDuration": 60 }
+    "api/*.js": {
+      "maxDuration": 60
+    }
   }
 }

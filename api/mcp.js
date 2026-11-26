@@ -4,9 +4,10 @@ import { fold } from "../lib/fold.js";
 import { searchDocuments, getDocument, findLaw, getArticle, listArticles, searchArticles, searchRulings, getRuling, checkConflicts, dataInfo } from "../lib/openlaw.js";
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 import { searchNtpc } from "../lib/ntpc-tools.js";
+import { checkBuilding, thresholdRadar } from "../lib/building-tools.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.9.5" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.10.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -23,6 +24,7 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 10. 官方核對：遇到下列情況，要開工具附的「官方來源」連結（全國法規資料庫、縣市法規網、國土署函釋頁面）核對關鍵條文的內容與最新修正日是否一致——(a) 答案會用在擬函、送審、回覆業主等正式用途；(b) 使用者問到最近有沒有修正；(c) data_info 顯示最近同步已超過 7 天。只拿官方網站核對，不拿一般網路文章核對。對不上時以官方網站為準，告訴使用者 openlawtw 可能尚未同步，並建議回報給 openlawtw。無法連到官方網站時，說明未能核對。
 11. 桃園市的案子或問到桃園市怎麼認定時，查完條文與國土署函釋後，即使已有答案，也要再用 search_minutes 查桃園市有沒有相關或不同的決議（關鍵字換幾種寫法，如「緊急昇降機」「緊急用昇降機」）；有不同的決議要明白指出差異，沒有就說沒查到。search_minutes 的內容是：桃園市政府建管單位法規執行疑義會議紀錄與公文（轉載於桃園市建築師公會網站），只適用桃園市的案子，不是法源。級別看每份紀錄的主持人與決議由誰作成（工具會標出主持人），不看會議名稱：市府人員主持並作成決議者可當第 3 級（「加速建照案審查修正意見暨疑義會議」多由建管處副處長或都發局副局長主持，也屬此類）；公會自行召開、市府只是轉送者只能當第 4 級實務參考。決議多半針對個案，要讀說明與條件、對照同主題的其他紀錄與函釋，不要只憑單一決議下結論。要寫明會議日期、發文機關與字號；有 OCR 誤字風險，引用前請開原檔；引用會議決議前，要先查同一條文的國土署函釋（search_rulings law=… article=…）：決議與條文或國土署函釋牴觸時，不論日期新舊，都以條文與函釋為準，並明白告訴使用者這個決議與上級規定不一致、不能當依據；只有桃園市自己的紀錄之間前後矛盾時，才以較新的為準。
 12. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
+13. 求解器是設計初期的初篩，不是合法判定：check_building／threshold_radar 只依輸入的量體列出要檢討的條文與門檻，不看平面配置。它列出的每一項都要再讀條文與函釋才能下結論；標「需確認」的不能說成「要」或「不要」；工具標 ⚠「條文已修正」的規則先不要採用，以現行條文為準。回答時說明這是初篩。
 建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。無障礙設施設計規範、耐震設計規範、綠建築技術規範等沒有逐條條文的原文文件，用 search_documents → get_document（無障礙規範可直接填節號，如 805）。`;
 
 const str = (description) => ({ type: "string", description });
@@ -76,6 +78,18 @@ const TOOLS = [
     description: "讀原文文件的一節或一頁。無障礙設施設計規範可用節號（section：805、805.1、206.2.1）；其他文件用 PDF 頁碼（page）。法規的附表（已抽出文字者）也用本工具讀：document 填法規名稱，section 填附表代號，例如 section=\"附表二 B-3\"（變使附表二的類組）、\"附表一\"、\"第17條 表\"（構造編活載重表）、\"附表一 丁種建築用地\"（非都附表一，填表格第一欄的類別名稱會列出該類所有列），或加 page 指定附表頁碼；只填 document 會列出該法規的附表目錄。兩者都不填會列出目錄。會附官方原檔與 openlawtw 頁面連結。",
     inputSchema: { type: "object", properties: { document: str("文件名稱、簡稱或 ID，例如「無障礙規範」「內政部-GL000734」"), section: str("節號，例如 805 或 805.1（限有章節的文件）"), page: { type: "integer", minimum: 1, description: "PDF 頁碼" }, region: str("限定地區（可省略）") }, required: ["document"] },
     annotations: { ...RO, title: "讀原文文件" }, run: getDocument,
+  },
+  {
+    name: "check_building", title: "建築法規求解器：這個量體要檢討哪些條文",
+    description: "設計初期的初篩，不是合法判定。輸入類組、地上／地下層數、標準層面積（與選填的基地面積、高度、戶數等），依 57 條規則列出被觸發、要檢討的條文：防火構造與時效、防火區劃、直通樓梯與安全梯、緊急昇降機、高層建築專章、停車與防空避難、無障礙、綠建築、主要消防設備、桃園地方規定。每項附條號、本案數值與門檻、要求，以及人工挑選的國土署函釋與桃園決議。標「需確認」的不是定論。條文在規則核對後又修正時會標 ⚠。問「幾層樓要不要 X」「這個規模要檢討什麼」時先用這個找出該查的條文，再用 get_article、search_rulings 查細節。不算容積、建蔽與土管。",
+    inputSchema: { type: "object", properties: { group: str("建築物使用類組，如 H-2（住宅）、G-2（辦公）、B-2（商場）、C-2（一般廠庫）"), floors: { type: "integer", minimum: 1, description: "地上層數" }, basements: { type: "integer", minimum: 0, description: "地下層數（預設 0）" }, typical_floor_area: { type: "number", description: "標準層（最大單層）樓地板面積 ㎡" }, site_area: { type: "number", description: "基地面積 ㎡（選填；綠化、保水、高層、無障礙例外會用到）" }, height: { type: "number", description: "建築物高度 m（選填；不填以每層 3.3 m 估）" }, units: { type: "integer", description: "戶數（選填；五層以下集合住宅是否屬公共建築物）" }, far_floor_area: { type: "number", description: "容積樓地板面積 ㎡（選填；高層第 228 條）" }, total_floor_area: { type: "number", description: "地上總樓地板面積 ㎡（選填；不填以標準層×層數估）" }, building_area: { type: "number", description: "建築面積 ㎡（選填；不填以標準層估）" }, basement_floor_area: { type: "number", description: "地下單層面積 ㎡（選填）" }, max_coverage: { type: "number", description: "法定建蔽率 %（選填；高層第 230 條）" }, zone: str("使用分區：住宅區（預設）或商業區（選填；高層第 228 條）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；影響法定停車）" }, fireproof: { type: "boolean", description: "填 false 表示打算做非防火構造（第 69 條要求防火構造時仍以防火構造檢討）" }, public_use: { type: "boolean", description: "是否供公眾使用（選填；不填依類組與規模推定）" }, category: str("只詳列某一類（選填）：構造與防火、防火區劃與內裝、避難逃生、昇降設備、高層建築專章、一般設計、停車與防空、無障礙、綠建築與能源、消防設備、桃園地方規定") }, required: ["group", "floors", "typical_floor_area"] },
+    annotations: { ...RO, title: "建築法規求解器" }, run: checkBuilding,
+  },
+  {
+    name: "threshold_radar", title: "門檻雷達：加減一層或改面積會多出什麼要求",
+    description: "和 check_building 同樣的輸入，回傳下一個門檻在哪：地上或地下加減樓層、標準層放大或縮小到下一個門檻時，哪些要求會多出、少掉或改變等級（例如 5 層加到 6 層會多出昇降機、安全梯、防空避難等）。用在量體還沒定、想知道「差一層差多少」的時候。同樣是初篩，不是合法判定。",
+    inputSchema: { type: "object", properties: { group: str("建築物使用類組，如 H-2（住宅）、G-2（辦公）、B-2（商場）、C-2（一般廠庫）"), floors: { type: "integer", minimum: 1, description: "地上層數" }, basements: { type: "integer", minimum: 0, description: "地下層數（預設 0）" }, typical_floor_area: { type: "number", description: "標準層（最大單層）樓地板面積 ㎡" }, site_area: { type: "number", description: "基地面積 ㎡（選填；綠化、保水、高層、無障礙例外會用到）" }, height: { type: "number", description: "建築物高度 m（選填；不填以每層 3.3 m 估）" }, units: { type: "integer", description: "戶數（選填；五層以下集合住宅是否屬公共建築物）" }, far_floor_area: { type: "number", description: "容積樓地板面積 ㎡（選填；高層第 228 條）" }, total_floor_area: { type: "number", description: "地上總樓地板面積 ㎡（選填；不填以標準層×層數估）" }, building_area: { type: "number", description: "建築面積 ㎡（選填；不填以標準層估）" }, basement_floor_area: { type: "number", description: "地下單層面積 ㎡（選填）" }, max_coverage: { type: "number", description: "法定建蔽率 %（選填；高層第 230 條）" }, zone: str("使用分區：住宅區（預設）或商業區（選填；高層第 228 條）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；影響法定停車）" }, fireproof: { type: "boolean", description: "填 false 表示打算做非防火構造（第 69 條要求防火構造時仍以防火構造檢討）" }, public_use: { type: "boolean", description: "是否供公眾使用（選填；不填依類組與規模推定）" } }, required: ["group", "floors", "typical_floor_area"] },
+    annotations: { ...RO, title: "門檻雷達" }, run: thresholdRadar,
   },
   {
     name: "search_ntpc_manual", title: "搜尋新北市建照業務工作手冊",

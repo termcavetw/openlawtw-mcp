@@ -24,6 +24,8 @@ Endpoint: `https://<your-deployment>.vercel.app/mcp` (Streamable HTTP, no login)
 | `search_rulings` | Rulings by law/article or keywords, newest first, flagged ⚠ when **revoked** by a later ruling or **older than the article's latest amendment** |
 | `get_ruling` | Full text of one ruling with the same warnings |
 | `check_conflicts` | Per law or article: references to deleted/missing articles, "declared void" notes, revoked rulings, stale rulings |
+| `check_building` | Rule-based first-pass screening (57 rules): given use group, storeys, basement levels and typical floor area, lists the articles that are triggered, with the case's numbers, the thresholds and hand-picked rulings. Not a compliance verdict; rules whose article was amended after verification are flagged ⚠ |
+| `threshold_radar` | Same input: which requirements appear, disappear or change when a storey or the floor area crosses the next threshold |
 | `search_documents`、`get_document`、`data_info` | Data version, last sync, coverage |
 
 The server also sends **instructions** to the client on connect: look things up before answering, cite article numbers and links, never invent rulings, surface every ⚠.
@@ -59,4 +61,4 @@ Local: `node scripts/dev-server.js` → `http://localhost:3000/mcp`. Inspect wit
 npm test
 ```
 
-在本機啟動 MCP，用 openlawtw 線上資料呼叫全部 14 支工具並檢查輸出（約 180 項）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**
+在本機啟動 MCP，用 openlawtw 線上資料呼叫全部工具並檢查輸出（500 多項），另有求解器的邊界測試（tests/solver.mjs，不連網）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**

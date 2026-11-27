@@ -7,7 +7,7 @@ import { searchNtpc } from "../lib/ntpc-tools.js";
 import { checkBuilding, thresholdRadar } from "../lib/building-tools.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.14.2" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.14.3" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -32,7 +32,7 @@ const RO = { readOnlyHint: true, openWorldHint: false };
 
 // 回答前要上網補查一次：寫在工具輸出結尾，比只寫在總則裡有效
 const WEB_TOOLS = new Set(["search_articles", "get_article", "search_rulings", "get_ruling", "search_minutes", "search_landuse", "search_ntpc_manual", "check_building"]);
-const WEB_NOTE = "（回答前：若你有上網工具，這一題至少上網查一次政府官方網站（.gov.tw），確認有沒有本庫還沒收的較新函釋、修法或該縣市的規定；查到的內容與上面的條文、函釋不一致時，以條文與函釋為準並說明差異。沒有上網工具就說明未能上網核對。）";
+const WEB_NOTE = "（上網核對：依規則第 8 條，有上網工具時本題至少查一次官方網站；沒有就說明未能核對。）";
 const TOOLS = [
   {
     name: "find_law", title: "找法規",

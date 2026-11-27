@@ -185,6 +185,21 @@ for (const [name, args, want, opt = {}] of CASES) {
   for (const w of opt.not || []) check(label + ` 不含「${w}」`, !r.text.includes(w), r.text);
   check(label + " 非空", r.text.trim().length > 0);
 }
+// 結構化輸出（structuredContent）：宣告 outputSchema 的工具一定要附，欄位要對
+for (const t of tl.result?.tools || []) if (t.outputSchema) check(`${t.name} outputSchema 是 object`, t.outputSchema.type === "object");
+const sc = async (name, args) => (await rpc("tools/call", { name, arguments: args })).result?.structuredContent;
+{ const a = await sc("get_article", { law: "設計施工編", articles: ["95", "999"] });
+  check("structured get_article：第 95 條修正日 2005-01-21", a?.articles?.[0]?.amended === "2005-01-21" && a?.law_id === "D0070115", JSON.stringify(a));
+  check("structured get_article：第 999 條 exists=false", a?.articles?.[1]?.exists === false, JSON.stringify(a)); }
+{ const a = await sc("get_ruling", { id: "nfa:f30da5981b27" });
+  check("structured get_ruling：字號、日期、停用者", a?.ruling?.doc_no === "內授消字第1090822257號" && a?.ruling?.date === "2020-05-06" && a?.ruling?.revoked_by === "nfa:02e4556d02e9", JSON.stringify(a)); }
+{ const a = await sc("search_rulings", { keywords: ["納管", "共用"], source: "部會", limit: 2 });
+  check("structured search_rulings：有 central:M11131337060", (a?.results || []).some((r) => r.id === "central:M11131337060" && r.date === "2022-10-28"), JSON.stringify(a)); }
+{ const a = await sc("search_articles", { keywords: ["電梯", "六層"], law: "設計施工編", limit: 2 });
+  check("structured search_articles：第 55 條附修正日", (a?.results || []).some((r) => r.article === "第 55 條" && r.amended === "2021-07-19"), JSON.stringify(a)); }
+{ const a = await sc("verify_citations", { text: "依建築技術規則建築設計施工編第 95 條（2011-02-25 修正）" });
+  check("structured verify_citations：issues 1 個", a?.issues?.length === 1, JSON.stringify(a)); }
+{ const a = await sc("get_ruling", { id: "不存在的id" }); check("structured get_ruling 查無時仍附物件", a && typeof a === "object", JSON.stringify(a)); }
 server.close();
 console.log(`\nopenlawtw-mcp v${ver}：${pass} 項通過，${fail} 項失敗`);
 process.exit(fail ? 1 : 0);

@@ -6,9 +6,10 @@ import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js"
 import { searchNtpc } from "../lib/ntpc-tools.js";
 import { checkBuilding, thresholdRadar } from "../lib/building-tools.js";
 import { verifyCitations } from "../lib/verify-tools.js";
+import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.15.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.16.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -182,7 +183,7 @@ async function handleMessage(msg) {
     case "ping":
       return ok(id, {});
     case "tools/list":
-      return ok(id, { tools: TOOLS.map(({ run, ...t }) => t) });
+      return ok(id, { tools: TOOLS.map(({ run, ...t }) => (SCHEMAS[t.name] ? { ...t, outputSchema: SCHEMAS[t.name] } : t)) });
     case "tools/call": {
       const tool = TOOLS.find((t) => t.name === params.name);
       if (!tool) return fail(id, -32602, `Unknown tool: ${params.name}`);
@@ -195,7 +196,8 @@ async function handleMessage(msg) {
         let text = await tool.run(args);
         if (/^search_/.test(tool.name) && Array.isArray(args.keywords)) { const n = synNote(args.keywords); if (n) text += "\n" + n; }
         if (WEB_TOOLS.has(tool.name)) text += "\n" + WEB_NOTE;
-        return ok(id, { content: [{ type: "text", text }], isError: false });
+        const sc = SCHEMAS[tool.name] ? (await structure(tool.name, args, text)) || {} : null; // 宣告了 outputSchema 就一定附 structuredContent
+        return ok(id, { content: [{ type: "text", text }], ...(sc ? { structuredContent: sc } : {}), isError: false });
       } catch (e) {
         return ok(id, { content: [{ type: "text", text: `查詢失敗：${e.message}。請告訴使用者目前無法查詢，不要改憑記憶回答。` }], isError: true });
       }

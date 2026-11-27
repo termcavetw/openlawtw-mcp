@@ -62,3 +62,9 @@ npm test
 ```
 
 在本機啟動 MCP，用 openlawtw 線上資料呼叫全部工具並檢查輸出（500 多項），另有求解器的邊界測試（tests/solver.mjs，不連網）。不需要安裝任何套件。推送到 main、開 PR 時會由 GitHub Actions 自動執行，另外每天跑一次以發現上游資料格式變動。**推送前請先跑過。**
+
+## 同義詞、缺口探測與題庫
+
+- `lib/synonyms.js`：建築用語同義詞（電梯＝昇降機、違建＝違章建築、建照→建造執照…），所有搜尋工具都會一併比對，輸出結尾會註明。只收指同一件事的詞。
+- `node scripts/probe-gaps.mjs`：拿一批實務常問的口語詞去搜，列出查不到的詞，用來預先找出資料缺口與該補的同義詞（不記錄任何使用者查詢）。
+- `tests/eval.json`：實務題庫。`npm test` 會驗證每題該用的工具輸出仍含關鍵事實；`node tests/grade.mjs` 印出題目，`node tests/grade.mjs answers.json` 依每題必要事實替 AI 的回答計分。

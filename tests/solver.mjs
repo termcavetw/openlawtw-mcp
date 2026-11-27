@@ -56,7 +56,7 @@ T("f28 H-2 5F 不觸發", { group: "H-2", F: 5, typ: 500 }, "f28", false);
 ok("H 51m 屬高層", solve({ group: "H-2", F: 15, B: 3, typ: 620, H: 51 }).c.high === true);
 { const p = solve({ group: "H-2", F: 7, typ: 400, site: 900 }).out.find((o) => o.id === "p59"); ok("法定停車 16 輛", /16 輛/.test(JSON.stringify(p.calc)), p.calc); }
 { const rd = radar({ group: "H-2", F: 5, B: 1, typ: 230, site: 420 }); const up = rd.find((x) => /加到 6 層/.test(x.label)); ok("雷達 5→6 層多出昇降機與防空避難", up && ["l55", "p141", "e96"].every((id) => up.ch.some((c) => c.id === id)), up && up.ch.map((c) => c.id)); }
-ok("規則 60 條", R.length === 60, R.length);
+ok("規則 63 條", R.length === 63, R.length);
 // 2026-11-27：混合用途、供公眾判定、無障礙廁所、消防甲類逐層
 { const r = solve({ group: "C-2", F: 4, typ: 120 }); const o = (id) => r.out.find((x) => x.id === id);
   ok("窯業廠房 4F×120：應為防火構造", o("fp69").on === true);
@@ -95,6 +95,19 @@ T("倉庫 → 第十四章不列", { group: "C-2", F: 2, typ: 400, ind: "warehou
 { const o = solve({ group: "C-2", F: 4, typ: 120, zoneTxt: "乙種工業區" }).out.find((x) => x.id === "i269"); ok("工業區作業廠房單層 120 < 150 → 標不符", o.on === true && o.lvl === "!", o); }
 { const o = solve({ F: 7, typ: 300, uses: [{ group: "B-3", floors: "1" }, { group: "H-2", floors: "2-7" }] }).out.find((x) => x.id === "e93"); ok("1F 餐廳＋住宅：步行距離以 2F 以上的住宅 50 m 檢討", o.lvl === "50", o); }
 { const o = solve({ F: 4, typ: 300, uses: [{ group: "B-3", floors: "1-2" }, { group: "H-2", floors: "3-4" }] }).out.find((x) => x.id === "e93"); ok("2F 也是餐廳：步行距離 30 m", o.lvl === "30", o); }
+// 容積與建蔽試算
+T("非都窯業用地 → 第 9 條 60%／120%", { group: "C-2", F: 4, typ: 120, site: 300, urban: false, zoneTxt: "窯業用地" }, "v-nu9", true);
+T("都市計畫內 → 不適用非都第 9 條", { group: "H-2", F: 5, typ: 200, site: 400 }, "v-nu9", false);
+T("非都未填使用地 → 需確認", { group: "H-2", F: 3, typ: 100, site: 300, urban: false }, "v-nu9", "info");
+T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, site: 400 }, "v-bcr", "info");
+{ const o = solve({ group: "C-2", F: 4, typ: 120, site: 300, urban: false, zoneTxt: "窯業用地" }).out; const b = o.find((x) => x.id === "v-bcr"), f = o.find((x) => x.id === "v-far");
+  ok("窯業 300㎡：可建建築面積 180、不超過", b.on === true && b.lvl === "" && /180 ㎡/.test(b.calc[0][1]), b);
+  ok("窯業 300㎡：基準容積 360，4×120=480 超過", f.on === true && f.lvl === "!" && /360 ㎡/.test(f.calc[0][1]) && /超過 120 ㎡/.test(f.calc[1][1]), f); }
+{ const o = solve({ group: "H-2", F: 5, typ: 200, site: 400, bcr: 50, far: 200, vfa: 780 }).out; const b = o.find((x) => x.id === "v-bcr"), f = o.find((x) => x.id === "v-far");
+  ok("住宅 400㎡ 50%／200%：建築面積 200 剛好、法定空地 200", b.lvl === "" && /200 ㎡/.test(b.calc[2][1]), b);
+  ok("住宅：基準容積 800、容積樓地板 780 未超過、機電免計 10%（一座梯）＝80", f.lvl === "" && /800 ㎡/.test(f.calc[0][1]) && /^80 ㎡/.test(f.calc[3][1]), f); }
+{ const f = solve({ group: "H-2", F: 10, typ: 300, site: 1000, bcr: 50, far: 300, vfa: 3000 }).out.find((x) => x.id === "v-far"); ok("10 層（要二座梯）：機電免計 15%＝450", /^450 ㎡/.test(f.calc[3][1]), f); }
+{ const b = solve({ group: "H-2", F: 3, typ: 300, site: 400, bcr: 60 }).out.find((x) => x.id === "v-bcr"); ok("建築面積 300 > 240 → 標超過", b.lvl === "!", b); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

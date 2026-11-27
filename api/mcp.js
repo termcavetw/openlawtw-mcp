@@ -9,7 +9,7 @@ import { verifyCitations } from "../lib/verify-tools.js";
 import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.16.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.16.1" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -191,6 +191,11 @@ async function handleMessage(msg) {
         const args = { ...(params.arguments || {}) };
         const miss = (tool.inputSchema?.required || []).filter((k) => args[k] === undefined || args[k] === null || args[k] === "" || (Array.isArray(args[k]) && !args[k].length));
         if (miss.length) return ok(id, { content: [{ type: "text", text: `缺少必填參數：${miss.join("、")}。請補上後再呼叫 ${tool.name}。` }], isError: true });
+        // 未定義的參數名（例如把 keywords 寫成 query）：不靜默忽略，回錯並列出可用參數
+        const known = Object.keys(tool.inputSchema?.properties || {});
+        const unknown = Object.keys(args).filter((k) => !known.includes(k));
+        if (unknown.length) return ok(id, { content: [{ type: "text", text: `${tool.name} 沒有參數：${unknown.join("、")}。可用參數：${known.join("、")}。請改用正確的參數名再呼叫（關鍵字請放在 keywords，格式是陣列）。` }], isError: true });
+        if (tool.name === "search_rulings" && !(args.keywords || []).length && !args.law) return ok(id, { content: [{ type: "text", text: "search_rulings 要給 keywords（關鍵字陣列）或 law（法規），否則會列出全庫最新的函釋、沒有意義。例：keywords=[\"緊急昇降機\", \"避難層\"]，或 law=\"設計施工編\" article=\"107\"。" }], isError: true });
         // 縣市名稱「台／臺」通用（臺北市、臺中市、臺南市、臺東縣）
         if (typeof args.region === "string") args.region = args.region.split(/[,，]/).map((r) => fold(r.trim())).join(",");
         let text = await tool.run(args);

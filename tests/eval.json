@@ -1,5 +1,5 @@
 {
- "note": "實務題庫：q 是使用者會問的問題；answer 是正確答案摘要；must 是 AI 回答必須出現的事實（給人工或 AI 評分用）；calls 是答這題該用的工具呼叫，check 是工具輸出必須含的字串（npm test 自動驗證資料還在、工具還找得到）。 給 AI 作答與評分：node tests/grade.mjs 會印出題目；把 AI 的回答存成 {id: 回答} 的 JSON 後 node tests/grade.mjs answers.json，依 must 計分；must 裡用「|」分隔的寫法任一個出現就算有。",
+ "note": "實務題庫：q 是使用者會問的問題；answer 是正確答案摘要；must 是 AI 回答必須出現的事實（給人工或 AI 評分用）；calls 是答這題該用的工具呼叫，check 是工具輸出必須含的字串（npm test 自動驗證資料還在、工具還找得到）。 給 AI 作答與評分：node tests/grade.mjs 會印出題目；把 AI 的回答存成 {id: 回答} 的 JSON 後 node tests/grade.mjs answers.json，依 must 計分；must 裡用「|」分隔的寫法任一個出現就算有。 must_not：不能出現的錯誤說法（出現就扣分）。評分時也會用 verify_citations 核對每題回答的條號、修正日與函釋字號。",
  "items": [
   {
    "id": "landuse-qingpu-far",
@@ -873,6 +873,11 @@
       "自動撒水"
      ]
     }
+   ],
+   "must_not": [
+    "2F 應設置 2 座",
+    "2F 須設置二座",
+    "2F～4F 均應設置 2 座"
    ]
   },
   {
@@ -903,6 +908,11 @@
       "法定空地至少：200 ㎡"
      ]
     }
+   ],
+   "must_not": [
+    "＝ 120 ㎡",
+    "= 120 ㎡",
+    "上限為 120"
    ]
   },
   {
@@ -929,6 +939,9 @@
       "同義詞已一併搜尋：電梯＝昇降機"
      ]
     }
+   ],
+   "must_not": [
+    "五層以上之建築物"
    ]
   },
   {

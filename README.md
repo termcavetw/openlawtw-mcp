@@ -25,6 +25,7 @@ Endpoint: `https://<your-deployment>.vercel.app/mcp` (Streamable HTTP, no login)
 | `get_ruling` | Full text of one ruling with the same warnings |
 | `check_conflicts` | Per law or article: references to deleted/missing articles, "declared void" notes, revoked rulings, stale rulings |
 | `check_building` | Rule-based first-pass screening (59 rules, mixed uses by floor): given use group(s), storeys, basement levels and typical floor area, lists the articles that are triggered, with the case's numbers, the thresholds and hand-picked rulings. Not a compliance verdict; rules whose article was amended after verification are flagged ⚠ |
+| `verify_citations` | 回答送出前核對草稿裡的條號、條文修正日、函釋字號與日期、是否已停止適用 |
 | `threshold_radar` | Same input: which requirements appear, disappear or change when a storey or the floor area crosses the next threshold |
 | `search_documents`、`get_document`、`data_info` | Data version, last sync, coverage |
 
@@ -67,4 +68,4 @@ npm test
 
 - `lib/synonyms.js`：建築用語同義詞（電梯＝昇降機、違建＝違章建築、建照→建造執照…），所有搜尋工具都會一併比對，輸出結尾會註明。只收指同一件事的詞。
 - `node scripts/probe-gaps.mjs`：拿一批實務常問的口語詞去搜，列出查不到的詞，用來預先找出資料缺口與該補的同義詞（不記錄任何使用者查詢）。
-- `tests/eval.json`：實務題庫。`npm test` 會驗證每題該用的工具輸出仍含關鍵事實；`node tests/grade.mjs` 印出題目，`node tests/grade.mjs answers.json` 依每題必要事實替 AI 的回答計分。
+- `tests/eval.json`：實務題庫。`npm test` 會驗證每題該用的工具輸出仍含關鍵事實；`node tests/grade.mjs` 印出題目，`node tests/grade.mjs answers.json` 依每題必要事實（must）、不能出現的錯誤說法（must_not）計分，並用 verify_citations 核對每題的引用。

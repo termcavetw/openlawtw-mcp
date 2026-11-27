@@ -84,6 +84,8 @@ const CASES = [
   ["get_ruling", { id: "land:8c0194bffe16" }, ["部分停止適用［get_ruling id=\"land:6e87c9c240bb\"］"]],
   ["get_ruling", { id: "taipei:FE353389" }, ["⛔ 已由 臺北市政府都市發展局 北市都設字第1133082427號函"]],
   ["data_info", {}, ["收到 112 年 5 月"]],
+  ["find_law", { query: "特種建築物" }, ["經濟部審議特種建築物申請案處理原則"]],
+  ["search_rulings", { keywords: ["出流管制"], source: "部會", limit: 2 }, ["central:RGL001869", "出處：經濟部主管法規查詢系統"]],
   ["search_ntpc_manual", { no: "05-12" }, ["■ 案例 05-12（容積檢討類）"]],
   ["get_ruling", { id: "nfa:72f040b55ff6" }, ["第 146 條、第 175 條"]],
   ["get_ruling", { id: "14039" }, ["・內授營建管字第1070813543號", "・內授營建管字第1070814157號"]],

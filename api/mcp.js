@@ -7,13 +7,13 @@ import { searchNtpc } from "../lib/ntpc-tools.js";
 import { checkBuilding, thresholdRadar } from "../lib/building-tools.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.14.1" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.14.2" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
 回答臺灣建築法規問題時請遵守：
 1. 條號、條文內容、函釋字號一律先用工具查過才寫，不憑記憶。
-2. 引用時寫法規全名＋條號，引用關鍵原文，附上工具給的連結；函釋寫字號與日期。
+2. 引用時寫法規全名＋條號，引用關鍵原文，附上工具給的連結；函釋寫字號與日期。條文的修正日期只能照工具印出的「本條最近修正」寫（法規整部的最新修正日不是該條的修正日）；沒有讀到該條的修正日就不要寫日期。
 3. 查不到就說查不到，不要補條號或捏造函釋。
 4. 工具印出 ⛔「已由 X 停止適用」的函不能當依據（標「部分停止適用」的要讀 X 確認哪些部分仍適用），改引用 X 或更新的函。注意工具印出的 ⚠：條文已修正而函釋較舊、函釋已被停止適用、條文引用已刪除的條文、函告無效、施行日註記。有的話要明白告訴使用者，並優先採用較新的規定與函釋。
 5. 問題涉及特定縣市時，也要查該縣市的規定（region 參數）。新北市的案子另用 search_ntpc_manual 查新北市建照業務工作手冊（第 3 級，只適用新北市）。

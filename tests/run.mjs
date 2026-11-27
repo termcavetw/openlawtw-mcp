@@ -89,6 +89,7 @@ const CASES = [
   ["get_article", { law: "設計施工編", articles: ["95"] }, ["回答前：若你有上網工具，這一題至少上網查一次政府官方網站"]],
   ["search_rulings", { keywords: ["樓中樓"], source: "國土署", limit: 2 }, ["同義詞已一併搜尋：樓中樓＝夾層"]],
   ["search_articles", { keywords: ["機械車位"], limit: 2 }, ["機械停車"]],
+  ["check_building", { group: "C-2", floors: 4, typical_floor_area: 120, site_area: 300, urban_plan: false, land_use: "窯業用地", category: "工廠類建築物" }, ["（本條最近修正 2021-01-19）"]],
   ["search_ntpc_manual", { no: "05-12" }, ["■ 案例 05-12（容積檢討類）"]],
   ["get_ruling", { id: "nfa:72f040b55ff6" }, ["第 146 條、第 175 條"]],
   ["get_ruling", { id: "14039" }, ["・內授營建管字第1070813543號", "・內授營建管字第1070814157號"]],

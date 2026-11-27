@@ -8,7 +8,7 @@ const norm = (s) => String(s || "").replace(/[\s,，]/g, "");
 let got = 0, total = 0, full = 0, answered = 0;
 for (const it of items) {
   const a = norm(ans[it.id]); if (!a) continue; answered++;
-  const miss = it.must.filter((m) => !a.includes(norm(m)));
+  const miss = it.must.filter((m) => !String(m).split("|").some((alt) => a.includes(norm(alt))));
   got += it.must.length - miss.length; total += it.must.length; if (!miss.length) full++;
   console.log(`${miss.length ? "✗" : "✓"} ${it.id}${miss.length ? `：缺「${miss.join("」「")}」｜正解：${it.answer}` : ""}`);
 }

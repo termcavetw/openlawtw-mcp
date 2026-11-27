@@ -18,7 +18,7 @@ Endpoint: `https://<your-deployment>.vercel.app/mcp` (Streamable HTTP, no login)
 | Tool | What it does |
 |---|---|
 | `find_law` | Find a law by name, short name (建技, 變使, 危老…) or keywords; a city name filters by region |
-| `get_article` | Article text, chapter, last-amended date, enactment date, effective-date notes, official attachment links, warnings when the article cites deleted articles |
+| `get_article` | 填 date 可查某日當時有效的條文。Article text, chapter, last-amended date, enactment date, effective-date notes, official attachment links, warnings when the article cites deleted articles |
 | `list_articles` | Chapter outline of a law |
 | `search_articles` | Full-text search across articles (central by default, any city, or all) |
 | `search_rulings` | Rulings by law/article or keywords, newest first, flagged ⚠ when **revoked** by a later ruling or **older than the article's latest amendment** |

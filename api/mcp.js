@@ -9,7 +9,7 @@ import { verifyCitations } from "../lib/verify-tools.js";
 import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.16.1" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.17.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -28,6 +28,7 @@ const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法�
 12. 這是法規查詢，不是主管機關的認定；個案適用請以主管建築機關審查為準。
 13. 求解器是設計初期的初篩，不是合法判定：check_building／threshold_radar 只依輸入的量體列出要檢討的條文與門檻，不看平面配置。它列出的每一項都要再讀條文與函釋才能下結論；標「需確認」的不能說成「要」或「不要」；工具標 ⚠「條文已修正」的規則先不要採用，以現行條文為準。回答時說明這是初篩。
 14. 回答寫好、送出之前，用 verify_citations 把草稿全文核對一次；有 ✗（條號、修正日、字號或日期寫錯）或 ⛔（引用已停止適用的函卻沒註明）要先改正再回答，？（本庫未收）要註明未見原文。
+15. 問到舊案（建照掛號、變更、使照當時）適用的法令，或說「當時」的規定時，用 get_article 的 date 參數查那一天有效的條文，不要拿現行條文回答；工具標「起迄日不確定」或沒有涵蓋那天的，要說明並請使用者開全國法規資料庫沿革核對。
 建議流程：find_law 確認法規 → get_article 讀條文 → search_rulings 查函釋 → get_ruling 讀全文；不知道在哪一條就 search_articles。無障礙設施設計規範、耐震設計規範、綠建築技術規範等沒有逐條條文的原文文件，用 search_documents → get_document（無障礙規範可直接填節號，如 805）。`;
 
 const str = (description) => ({ type: "string", description });
@@ -45,8 +46,8 @@ const TOOLS = [
   },
   {
     name: "get_article", title: "讀條文",
-    description: "讀取一部法規的指定條文全文，含章節位置、本條最近修正日、法規制定日與施行日註記、附表附圖官方連結、引用已刪除條文的警告，以及 openlawtw 連結。法規可用全名、ID 或簡稱；條號可寫 107、164-1、164之1、第一百零七條。",
-    inputSchema: { type: "object", properties: { law: str("法規名稱、簡稱或 ID，例如「設計施工編」「D0070115」"), articles: { type: "array", items: { type: "string" }, description: "條號清單，例如 [\"107\", \"108\"]" }, region: str("同名法規時限定地區（可省略）") }, required: ["law", "articles"] },
+    description: "讀取一部法規的指定條文全文（填 date 可查某日當時有效的條文），含章節位置、本條最近修正日、法規制定日與施行日註記、附表附圖官方連結、引用已刪除條文的警告，以及 openlawtw 連結。法規可用全名、ID 或簡稱；條號可寫 107、164-1、164之1、第一百零七條。",
+    inputSchema: { type: "object", properties: { law: str("法規名稱、簡稱或 ID，例如「設計施工編」「D0070115」"), articles: { type: "array", items: { type: "string" }, description: "條號清單，例如 [\"107\", \"108\"]" }, date: str("選填：查某一天有效的條文（建照依掛號日適用當時法令），例如 2018-05-01 或 107.05.01；會附上那天的條文、施行區間與出處，只收中央法規、民國 90 年 4 月以後"), region: str("同名法規時限定地區（可省略）") }, required: ["law", "articles"] },
     annotations: { ...RO, title: "讀條文" }, run: getArticle,
   },
   {

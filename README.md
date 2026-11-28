@@ -24,7 +24,7 @@ Endpoint: `https://<your-deployment>.vercel.app/mcp` (Streamable HTTP, no login)
 | `search_rulings` | Rulings by law/article or keywords, newest first, flagged ⚠ when **revoked** by a later ruling or **older than the article's latest amendment** |
 | `get_ruling` | Full text of one ruling with the same warnings |
 | `check_conflicts` | Per law or article: references to deleted/missing articles, "declared void" notes, revoked rulings, stale rulings |
-| `check_building` | Rule-based first-pass screening (59 rules, mixed uses by floor): given use group(s), storeys, basement levels and typical floor area, lists the articles that are triggered, with the case's numbers, the thresholds and hand-picked rulings. Not a compliance verdict; rules whose article was amended after verification are flagged ⚠ |
+| `check_building` | Rule-based first-pass screening (64 rules, mixed uses by floor, per-floor areas via `floor_areas`): given use group(s), storeys, basement levels and floor areas (optionally FAR bonus `far_bonus` and parking deductions `parking_exclude`), lists the articles that are triggered, with the case's numbers, the thresholds and hand-picked rulings. Not a compliance verdict; rules whose article was amended after verification are flagged ⚠ |
 | `verify_citations` | 回答送出前核對草稿裡的條號、條文修正日、函釋字號與日期、是否已停止適用 |
 | `threshold_radar` | Same input: which requirements appear, disappear or change when a storey or the floor area crosses the next threshold |
 | `search_documents`、`get_document`、`data_info` | Data version, last sync, coverage |

@@ -201,6 +201,39 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
 { const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
   const a = await cu({ from_group: "G-2", to_group: "D-1", area: 400 });
   ok("變使停車類別依附表四：D-1 是第三類（G-2 第一類 → 第三類免檢討）", /由第 1 類（設置標準較高）變更為第 3 類/.test(a), a.slice(0, 300)); }
+{ const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
+  const k = await cu({ from_group: "G-3", to_group: "B-1", area: 200, floors: 5, floor: "1F", zone: "住宅區", city: "桃園市" });
+  ok("分區：住宅區改 B-1 → 不能變更（第 14 條第 1 項第 10 至 12 款）", /使用分區：⛔/.test(k) && /第 14 條第 1 項第 10 至 12 款/.test(k) && /不能變更使用/.test(k), k.slice(0, 700));
+  const t = await cu({ from_group: "H-2", to_group: "B-1", area: 150, floors: 5, floor: "1F", zone: "住宅區", city: "桃園市", use_item: "卡拉OK" });
+  ok("分區：住宅區卡拉OK → 第 10 款", /第 14 條第 1 項第 10 款/.test(t));
+  const f3 = await cu({ from_group: "G-3", to_group: "B-3", area: 200, floors: 4, floor: "3F", zone: "住宅區", city: "桃園市", use_item: "餐廳" });
+  ok("分區：住宅區餐廳在 3F → 不能（限 1F、2F、B1）", /使用分區：⛔/.test(f3) && /第 14 條第 2 項第 3 款/.test(f3));
+  const f2 = await cu({ from_group: "G-3", to_group: "B-3", area: 200, floors: 4, floor: "2F", zone: "住宅區", city: "桃園市", use_item: "餐廳" });
+  ok("分區：住宅區餐廳 2F 200㎡ → ✓", /使用分區：✓/.test(f2));
+  const big = await cu({ from_group: "G-3", to_group: "B-3", area: 800, floors: 4, floor: "1F", zone: "住宅區", use_item: "餐廳", city: "桃園市", road_width: 15 });
+  ok("分區：住宅區飲食店 800㎡、15m 路 → 第 15 條例外（要確認）", /使用分區：⚠/.test(big) && /第 15 條/.test(big));
+  const ht = await cu({ from_group: "H-2", to_group: "B-4", area: 300, floors: 5, floor: "1F", zone: "住宅區", city: "桃園市", road_width: 8 });
+  ok("分區：住宅區旅館、8m 路 → 不能", /使用分區：⛔/.test(ht) && /12m/.test(ht));
+  const ind = await cu({ from_group: "C-2", to_group: "H-2", area: 300, floors: 3, floor: "2F", zone: "乙種工業區", city: "桃園市", use_item: "住宅" });
+  ok("分區：乙種工業區改住宅 → 不能", /使用分區：⛔/.test(ind) && /第 17 條第 2 項/.test(ind));
+  const ind2 = await cu({ from_group: "C-2", to_group: "F-3", area: 300, floors: 3, floor: "1F", zone: "乙種工業區", city: "桃園市", use_item: "幼兒園" });
+  ok("分區：乙種工業區幼兒園 → 要市府審查核准", /使用分區：⚠/.test(ind2) && /第 3 款第 12 目/.test(ind2) && /審查核准/.test(ind2));
+  ok("分區：沒填 zone → 提示", /填 zone 可檢核/.test(await cu({ from_group: "G-2", to_group: "G-3" })));
+  // 公共建築物（第 170 條）
+  const p1 = await cu({ from_group: "G-3", to_group: "B-3", area: 350, permit_date: "2005-01-01" });
+  ok("公共建築物：B-3 350㎡ 是 → 101 年前建照依替代改善第二點", /第 170 條）：是/.test(p1) && /變更後屬公共建築物：依/.test(p1));
+  const p2 = await cu({ from_group: "G-3", to_group: "B-3", area: 120, permit_date: "2005-01-01" });
+  ok("公共建築物：B-3 120㎡ 不是 → 免檢討", /第 170 條）：不是/.test(p2) && /不是公共建築物：免檢討/.test(p2));
+  const p3 = await cu({ from_group: "G-2", to_group: "H-2", floors: 5 });
+  ok("公共建築物：H-2 5 層未填戶數 → 需確認", /第 170 條）：需確認/.test(p3) && /填 units/.test(p3));
+  ok("公共建築物：H-2 5 層 60 戶 → 是", /第 170 條）：是/.test(await cu({ from_group: "G-2", to_group: "H-2", floors: 5, units: 60 })));
+  ok("公共建築物：C 類不是（103 年函）", /1030044357/.test(await cu({ from_group: "G-2", to_group: "C-2" })));
+  ok("公共建築物：求解器 a170 行不再重複列", !/第 170 條公共建築物/.test(p1));
+  // 消防設備前後比較
+  const fd = await cu({ from_group: "G-3", to_group: "B-3", area: 600, floors: 4, floor: "2F" });
+  ok("消防：G-3→B-3 600㎡ 由乙類變甲類、新增排煙", /由乙類變為甲類/.test(fd) && /＋ 第 28 條排煙設備/.test(fd), fd.split("消防安全設備（")[1]?.slice(0, 800));
+  ok("消防：沒填面積層數 → 提示", /填 area 與 floors 會列出/.test(await cu({ from_group: "G-3", to_group: "B-3" })));
+  ok("變使：接受 from／to 參數名", /G-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" })) === false && /F-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" }))); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

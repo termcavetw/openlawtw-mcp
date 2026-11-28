@@ -73,6 +73,8 @@ const CASES = [
   ["check_building", { group: "Z-9", floors: 5, typical_floor_area: 230 }, ["不認得類組"], { error: true }],
   ["check_change_of_use", { from_group: "H-2", to_group: "G-3", area: 300 }, ["附表三", "停車空間", "無障礙設施"]],
   ["check_change_of_use", { from_group: "X", to_group: "G-3" }, ["不認得原使用類組"], { error: true }],
+  ["check_change_of_use", { from_group: "C-2", to_group: "C-1", area: 180, floors: 2, floor: "1F", zone: "丁種建築用地", use_item: "汽車修理", urban_plan: false }, ["非都市土地 丁種建築用地", "13.汽車修理業"]],
+  ["check_change_of_use", { from_group: "G-3", to_group: "B-1", area: 200, floors: 5, floor: "1F", zone: "住宅區", city: "桃園市" }, ["⛔", "不能變更使用", "第 14 條第 1 項第 10 至 12 款"]],
   ["get_document", { document: "桃園市一定規模以下建築物免辦理變更使用執照管理辦法", section: "附表一 H-2 → D-5" }, ["H-2 → D-5：④", "說明"]],
   ["search_documents", { keywords: ["室內裝修", "抽複查"], region: "新竹縣" }, ["新竹縣建築物室內裝修審核及查驗作業規範", "附件「附表二」"]],
   ["get_document", { document: "新竹縣建築物室內裝修審核及查驗作業規範", section: "附表二 第1頁" }, ["第 1 頁", "抽複查紀錄表"]],

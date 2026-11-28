@@ -248,6 +248,13 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("停車：I 類依 107 年函按實際用途", /1070808428/.test(pk({ group: "I", F: 1, typ: 200 }).why)); }
 { const c = solve({ group: "B-2", bGroup: "B-1", F: 8, B: 1, b1: 450, typ: 450 }).c;
   ok("地下層用途：B1 改 B-1、地上 B-2 → 複合用途、useTxt 標地下", c.mixed && /B-1（地下B1）/.test(c.useTxt) && c.jiaArea === 8 * 450 + 450, [c.useTxt, c.jiaArea]); }
+{ const fcOf = (g, u) => solve({ group: g, F: 2, typ: 200, useItem: u }).c.fc(g);
+  ok("消防分類：F-3 幼兒園 → 乙類第 12 目", fcOf("F-3", "幼兒園").k === "乙" && fcOf("F-3", "幼兒園").m === 12);
+  ok("消防分類：F-3 托嬰中心 → 甲類第 6 目", fcOf("F-3", "托嬰中心").k === "甲");
+  ok("消防分類：H-1 長照機構 → 甲類第 6 目；宿舍 → 乙類第 7 目", fcOf("H-1", "長期照顧服務機構").k === "甲" && fcOf("H-1", "宿舍").k === "乙");
+  ok("消防分類：D-1 游泳池 → 乙類第 9 目；健身房 → 甲類第 2 目", fcOf("D-1", "室內游泳池").m === 9 && fcOf("D-1", "健身房").k === "甲");
+  ok("消防分類：G-3 指壓按摩 → 甲類第 1 目", fcOf("G-3", "指壓按摩").k === "甲" && fcOf("G-3", "指壓按摩").m === 1);
+  ok("消防分類：沒填使用項目維持類組預設", fcOf("F-3").k === "甲"); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

@@ -165,6 +165,21 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("桃園都審：增加容積 60% > 50% → 要都審；機車位 320 輛", u.on === true && /320 輛/.test(JSON.stringify(u.calc)), u); }
 { const g = solve({ group: "H-2", F: 15, typ: 1900, H: 49.9 }).out.find((x) => x.id === "g24");
   ok("第 23、24 條：只列需確認，並標超過", g.on === "info" && /⚠/.test(JSON.stringify(g.calc)), g); }
+// 變更使用（附表三、四）
+{ const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
+  const a = await cu({ from_group: "H-2", to_group: "G-3", area: 662 });
+  ok("變使 H-2→G-3：☆，只列停車與無障礙；停車由第 2 類變第 1 類要檢討", /「☆」/.test(a) && /共 2 項/.test(a) && /16\. 停車空間/.test(a) && /20\. 無障礙/.test(a) && /設置標準提高/.test(a), a.slice(0, 400));
+  const b = await cu({ from_group: "G-3", to_group: "B-3" });
+  ok("變使 G-3→B-3：○，附表四 20 項全列", /「○」/.test(b) && /共 20 項/.test(b));
+  const c = await cu({ from_group: "C-2", to_group: "C-1" });
+  ok("變使 C-2→C-1：△，說明二 8 項", /「△」/.test(c) && /共 8 項/.test(c) && /15\. 最低活載重/.test(c) === false && /附表三免檢討：.*最低活載重/.test(c), c.slice(0, 600));
+  const d = await cu({ from_group: "G-2", to_group: "H-2", permit_date: "104.3.2" });
+  ok("變使 G-2→H-2：☆ 另加通風、日照採光；102 年後建照不得替代改善", /17\. 通風/.test(d) && /21\. 日照、採光/.test(d) && /不得依身權法/.test(d), d.slice(0, 900));
+  const e = await cu({ from_group: "G-2", to_group: "G-3" });
+  ok("變使 G-2→G-3：停車同一設置標準免檢討", /同一設置標準/.test(e));
+  const f = await cu({ from_group: "H-2", to_group: "D-1", zone: "住宅區", whole_floor: false, main_group: "B-4", city: "桃園市" });
+  ok("變使 →D-1：列第 5、7 條、附表五、桃園免變使與防火標章", /第 7 條/.test(f) && /局部變更（第 5 條）/.test(f) && /附表五：D-1 作為 B-4/.test(f) && /防火標章/.test(f));
+  ok("變使：類組相同回錯", /不是變更使用類組/.test(await cu({ from_group: "G-2", to_group: "G-2" }))); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

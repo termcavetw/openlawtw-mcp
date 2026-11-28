@@ -5,11 +5,12 @@ import { searchDocuments, getDocument, findLaw, getArticle, listArticles, search
 import { searchMinutes, getMinutes, minutesInfo } from "../lib/minutes-tools.js";
 import { searchNtpc } from "../lib/ntpc-tools.js";
 import { checkBuilding, thresholdRadar } from "../lib/building-tools.js";
+import { checkChangeOfUse } from "../lib/change-of-use.js";
 import { verifyCitations } from "../lib/verify-tools.js";
 import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.20.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.21.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -35,7 +36,7 @@ const str = (description) => ({ type: "string", description });
 const RO = { readOnlyHint: true, openWorldHint: false };
 
 // 回答前要上網補查一次：寫在工具輸出結尾，比只寫在總則裡有效
-const WEB_TOOLS = new Set(["search_articles", "get_article", "search_rulings", "get_ruling", "search_minutes", "search_landuse", "search_ntpc_manual", "check_building"]);
+const WEB_TOOLS = new Set(["search_articles", "get_article", "search_rulings", "get_ruling", "search_minutes", "search_landuse", "search_ntpc_manual", "check_building", "check_change_of_use"]);
 const WEB_NOTE = "（上網核對：依規則第 8 條，有上網工具時本題至少查一次官方網站；沒有就說明未能核對。）";
 const TOOLS = [
   {
@@ -97,6 +98,12 @@ const TOOLS = [
     description: "和 check_building 同樣的輸入，回傳下一個門檻在哪：地上或地下加減樓層、標準層放大或縮小到下一個門檻時，哪些要求會多出、少掉或改變等級（例如 5 層加到 6 層會多出昇降機、安全梯、防空避難等）。用在量體還沒定、想知道「差一層差多少」的時候。同樣是初篩，不是合法判定。",
     inputSchema: { type: "object", properties: { group: str("建築物使用類組，如 H-2（住宅）、G-2（辦公）、B-2（商場）、C-2（一般廠庫）"), floors: { type: "integer", minimum: 1, description: "地上層數" }, basements: { type: "integer", minimum: 0, description: "地下層數（預設 0）" }, typical_floor_area: { type: "number", description: "標準層（最大單層）樓地板面積 ㎡；各層不同時改填 floor_areas 或 uses 的 area" }, site_area: { type: "number", description: "基地面積 ㎡（選填；綠化、保水、高層、無障礙例外會用到）" }, height: { type: "number", description: "建築物高度 m（選填；不填以每層 3.3 m 估）" }, units: { type: "integer", description: "戶數（選填；五層以下集合住宅是否屬公共建築物）" }, far_floor_area: { type: "number", description: "容積樓地板面積 ㎡（選填；高層第 228 條）" }, total_floor_area: { type: "number", description: "地上總樓地板面積 ㎡（選填；不填以標準層×層數估）" }, building_area: { type: "number", description: "建築面積 ㎡（選填；不填以標準層估）" }, basement_floor_area: { type: "number", description: "地下單層面積 ㎡（選填）" }, max_coverage: { type: "number", description: "法定建蔽率 %（選填；高層第 230 條）" }, max_far: { type: "number", description: "容積率上限 %（選填；填了會試算基準容積、免計上限；非都市土地填 land_use 可自動帶入）" }, zone: str("使用分區：住宅區（預設）、商業區、工業區…（選填；高層第 228 條、工廠類第十四章）"), land_use: str("非都市土地使用地類別（選填，如「丁種建築用地」「窯業用地」；工廠類第十四章適用範圍）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；影響法定停車）" }, fireproof: { type: "boolean", description: "填 false 表示打算做非防火構造（第 69 條要求防火構造時仍以防火構造檢討）" }, public_use: { type: "boolean", description: "是否供公眾使用（選填；不填依「供公眾使用建築物之範圍」推定）" }, uses: { type: "array", items: { type: "object", properties: { group: { type: "string" }, floors: { type: "string" }, area: { type: "number" } }, required: ["group", "floors"] }, description: "混合用途（選填）：各樓層的類組，可帶 area（該段每層面積），例如 [{\"group\":\"G-3\",\"floors\":\"1\",\"area\":400},{\"group\":\"H-2\",\"floors\":\"2-7\",\"area\":300}]；沒列到的樓層用 group" }, floor_areas: { type: "array", items: { type: "object", properties: { floors: { type: "string" }, area: { type: "number" } }, required: ["floors", "area"] }, description: "逐層面積（選填）：各樓層每層樓地板面積，例如 [{\"floors\":\"1\",\"area\":420},{\"floors\":\"2-9\",\"area\":350},{\"floors\":\"10\",\"area\":200}]；填了就逐層判斷（二座直通樓梯、消防栓、撒水、火警等看「任一層」的門檻），typical_floor_area 可省略" }, power_kw: { type: "number", description: "工廠用電（含電熱）千瓦（選填；判斷工廠是否供公眾使用）" }, industrial: str("C 類是「工廠」（預設）還是「倉庫」") , city: str("縣市（選填）：填「桃園市」才列桃園地方規定（綠化自治條例、特殊結構審查、都市設計審議）；填了 plan_area 也視為桃園市"), plan_area: str("桃園市都市計畫區（選填，如「青埔」「航空城」），會附上土管要點摘錄；搭配 zone_name 且沒填建蔽率、容積率時，會從土管自動帶入（標出處，要核對原檔）"), zone_name: str("使用分區名稱（選填，搭配 plan_area，如「第二種住宅區」）") }, required: ["floors"] },
     annotations: { ...RO, title: "門檻雷達" }, run: thresholdRadar,
+  },
+  {
+    name: "check_change_of_use", title: "變更使用類組：要檢討哪些項目",
+    description: "建築物變更使用類組的初篩：依「建築物使用類組及變更使用辦法」附表三（變更使用原則表）判斷原類組→新類組的符號（☆／△／※／○／◎），列出附表四該類組各檢討項目的標準；停車空間自動判斷是否免檢討，無障礙依原建照申請日判斷；另列第 5 條局部變更、第 6 條主從用途（附表五）、第 7 條、第 8 條。填 area（變更範圍面積）與 floors 時，附上求解器對變更後類組的門檻。city 填桃園市時，另列「桃園市一定規模以下建築物免辦理變更使用執照管理辦法」。類組以原領使用執照登載的為準；這是初篩，不是主管機關認定。",
+    inputSchema: { type: "object", properties: { from_group: str("原領使用執照的使用類組，如 H-2"), to_group: str("變更後的使用類組，如 G-3"), area: { type: "number", description: "變更範圍樓地板面積 ㎡（選填；停車試算、求解器門檻）" }, floors: { type: "integer", minimum: 1, description: "建築物地上層數（選填）" }, floor: str("變更範圍所在樓層（選填，如 1F、B1）"), whole_floor: { type: "boolean", description: "是否整層變更（預設 true；false 會列第 5 條局部變更的區劃條件）" }, permit_date: str("原建造執照申請日期（選填，如 2010-05-01 或 99.05.01；判斷無障礙）"), zone: str("使用分區（選填；第 7 條非商業區的區劃）"), main_group: str("同一使用單元的主用途類組（選填；以附表五判斷 to_group 是否為其從屬用途）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；停車標準）" }, site_area: { type: "number", description: "基地面積 ㎡（選填）" }, city: str("縣市（選填）：填「桃園市」會列一定規模以下免辦理變更使用執照管理辦法") }, required: ["from_group", "to_group"] },
+    annotations: { ...RO, title: "變更使用檢討" }, run: checkChangeOfUse,
   },
   {
     name: "verify_citations", title: "核對回答裡的條號、修正日與函釋字號",

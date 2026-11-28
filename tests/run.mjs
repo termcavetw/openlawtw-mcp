@@ -71,6 +71,8 @@ const CASES = [
   ["check_building", { uses: [{ group: "G-3", floors: "1" }, { group: "H-2", floors: "2-7" }], floors: 7, typical_floor_area: 300, plan_area: "青埔", zone_name: "住宅區", category: "桃園" }, ["混合用途 G-3（1F）、H-2（2F～7F）", "桃園市土管要點（線索，不是判定）", "PF000005000457"]],
   ["threshold_radar", { group: "H-2", floors: 5, typical_floor_area: 230, site_area: 420, height: 16 }, ["高度提高到超過 20 m", "戶數增加到 50 戶"]],
   ["check_building", { group: "Z-9", floors: 5, typical_floor_area: 230 }, ["不認得類組"], { error: true }],
+  ["check_change_of_use", { from_group: "H-2", to_group: "G-3", area: 300 }, ["附表三", "停車空間", "無障礙設施"]],
+  ["check_change_of_use", { from_group: "X", to_group: "G-3" }, ["不認得原使用類組"], { error: true }],
   ["check_building", { group: "H-2", floors: 5 }, ["輸入不完整", "typical_floor_area", "floor_areas"], { error: true }],
   ["threshold_radar", { group: "H-2", floors: 5, basements: 1, typical_floor_area: 230, site_area: 420 }, ["地上加到 6 層", "＋多出　昇降機（建築技術規則建築設計施工編 第 55 條）", "－少掉　3～5 層住宅免改設安全梯"]],
   ["search_rulings", { keywords: ["共用月租套房", "消防安全設備"], limit: 2 }, ["消防問題：消防署函釋列在最前面", "nfa:bb23dbab0b71"]],

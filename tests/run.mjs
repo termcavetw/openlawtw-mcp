@@ -74,6 +74,8 @@ const CASES = [
   ["check_change_of_use", { from_group: "H-2", to_group: "G-3", area: 300 }, ["附表三", "停車空間", "無障礙設施"]],
   ["check_change_of_use", { from_group: "X", to_group: "G-3" }, ["不認得原使用類組"], { error: true }],
   ["get_document", { document: "桃園市一定規模以下建築物免辦理變更使用執照管理辦法", section: "附表一 H-2 → D-5" }, ["H-2 → D-5：④", "說明"]],
+  ["search_documents", { keywords: ["室內裝修", "抽複查"], region: "新竹縣" }, ["新竹縣建築物室內裝修審核及查驗作業規範", "附件「附表二」"]],
+  ["get_document", { document: "新竹縣建築物室內裝修審核及查驗作業規範", section: "附表二 第1頁" }, ["第 1 頁", "抽複查紀錄表"]],
   ["check_building", { group: "H-2", floors: 5 }, ["輸入不完整", "typical_floor_area", "floor_areas"], { error: true }],
   ["threshold_radar", { group: "H-2", floors: 5, basements: 1, typical_floor_area: 230, site_area: 420 }, ["地上加到 6 層", "＋多出　昇降機（建築技術規則建築設計施工編 第 55 條）", "－少掉　3～5 層住宅免改設安全梯"]],
   ["search_rulings", { keywords: ["共用月租套房", "消防安全設備"], limit: 2 }, ["消防問題：消防署函釋列在最前面", "nfa:bb23dbab0b71"]],

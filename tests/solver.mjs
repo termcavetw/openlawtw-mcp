@@ -246,6 +246,8 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("停車：H-1 依附表四第三類 → 3 輛", JSON.stringify(h1.calc).includes("3 輛") && /H-1 依附表四為第三類/.test(h1.note), h1.calc);
   ok("停車：H-2 仍第二類 → 4 輛", JSON.stringify(pk({ group: "H-2", F: 2, typ: 500 }).calc).includes("4 輛"));
   ok("停車：I 類依 107 年函按實際用途", /1070808428/.test(pk({ group: "I", F: 1, typ: 200 }).why)); }
+{ const c = solve({ group: "B-2", bGroup: "B-1", F: 8, B: 1, b1: 450, typ: 450 }).c;
+  ok("地下層用途：B1 改 B-1、地上 B-2 → 複合用途、useTxt 標地下", c.mixed && /B-1（地下B1）/.test(c.useTxt) && c.jiaArea === 8 * 450 + 450, [c.useTxt, c.jiaArea]); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

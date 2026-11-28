@@ -29,6 +29,7 @@ function check(label, cond, detail = "") {
 // name, args, [必須出現的字串…], {error: 預期 isError, not: [不可出現的字串]}
 const CASES = [
   ["data_info", {}, ["各地區向官方核對", "最近變動："]],
+  ["search_landuse", { area: "小檜溪", keywords: ["容積率"], limit: 2 }, ["正式計畫名稱含「三民路以北」", "三民路以北、民生路內側以東至南崁溪整治線間"]],
   ["search_landuse", { area: "中路", keywords: ["住宅區"], limit: 2 }, ["「中路」不是計畫區名稱", "縱貫公路桃園內壢間都市計畫"]],
   ["search_landuse", { area: "南崁", keywords: ["開挖率"], limit: 3 }, ["⚠ 跨計畫區公告", "PF000005000513"]],
   ["data_info", {}, ["openlawtw 資料版本", "最近同步", "桃園市法規疑義會議紀錄", "農業部（農地農舍）函釋"], { not: ["經濟部、農業部"] }],

@@ -56,7 +56,7 @@ T("f28 H-2 5F 不觸發", { group: "H-2", F: 5, typ: 500 }, "f28", false);
 ok("H 51m 屬高層", solve({ group: "H-2", F: 15, B: 3, typ: 620, H: 51 }).c.high === true);
 { const p = solve({ group: "H-2", F: 7, typ: 400, site: 900 }).out.find((o) => o.id === "p59"); ok("法定停車 16 輛", /16 輛/.test(JSON.stringify(p.calc)), p.calc); }
 { const rd = radar({ group: "H-2", F: 5, B: 1, typ: 230, site: 420 }); const up = rd.find((x) => /加到 6 層/.test(x.label)); ok("雷達 5→6 層多出昇降機與防空避難", up && ["l55", "p141", "e96"].every((id) => up.ch.some((c) => c.id === id)), up && up.ch.map((c) => c.id)); }
-ok("規則 66 條", R.length === 66, R.length);
+ok("規則 67 條", R.length === 67, R.length);
 // 2026-11-27：混合用途、供公眾判定、無障礙廁所、消防甲類逐層
 { const r = solve({ group: "C-2", F: 4, typ: 120 }); const o = (id) => r.out.find((x) => x.id === id);
   ok("窯業廠房 4F×120：應為防火構造", o("fp69").on === true);
@@ -156,6 +156,15 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("第 164 條：30 m 臨 6 m 路，頂部須退 ≥ 2.34 m", k.lvl === "!" && /2\.34 m/.test(JSON.stringify(k.calc)), k.calc);
   const n = solve({ group: "H-2", F: 3, typ: 200, H: 10, Sw: 8 }).out.find((x) => x.id === "g164h");
   ok("第 164 條：10 m 臨 8 m 路不必退縮", n.lvl === "" && /不必退縮/.test(JSON.stringify(n.calc)), n.calc); }
+{ // 增建停車（82.09.07 函）：原有已達標準 → 只算增建、不扣免設；原有未達 → 合併計算
+  const a = solve({ group: "C-2", F: 2, typ: 900, urban: false, addA: 1740, exA: 3400 }).out.find((x) => x.id === "p59");
+  ok("增建：原有 3,400 已達標準，1,740 ÷ 350 → 5 輛", a.on === true && /→ 5 輛/.test(JSON.stringify(a.calc)), a.calc);
+  const b = solve({ group: "C-2", F: 1, typ: 900, urban: false, addA: 600, exA: 300 }).out.find((x) => x.id === "p59");
+  ok("增建：原有 300 未達 500，合併 (300＋600−500) ÷ 350 → 2 輛", /→ 2 輛/.test(JSON.stringify(b.calc)), b.calc); }
+{ const u = solve({ group: "H-2", F: 15, typ: 1900, site: 5600, far: 260, farBonus: 8700, units: 320, ty: true }).out.find((x) => x.id === "t-ud");
+  ok("桃園都審：增加容積 60% > 50% → 要都審；機車位 320 輛", u.on === true && /320 輛/.test(JSON.stringify(u.calc)), u); }
+{ const g = solve({ group: "H-2", F: 15, typ: 1900, H: 49.9 }).out.find((x) => x.id === "g24");
+  ok("第 23、24 條：只列需確認，並標超過", g.on === "info" && /⚠/.test(JSON.stringify(g.calc)), g); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

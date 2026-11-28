@@ -10,7 +10,7 @@ import { verifyCitations } from "../lib/verify-tools.js";
 import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.26.1" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.27.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -48,7 +48,7 @@ const TOOLS = [
   {
     name: "get_article", title: "讀條文",
     description: "讀取一部法規的指定條文全文（填 date 可查某日當時有效的條文），含章節位置、本條最近修正日、法規制定日與施行日註記、附表附圖官方連結、引用已刪除條文的警告，以及 openlawtw 連結。法規可用全名、ID 或簡稱；條號可寫 107、164-1、164之1、第一百零七條。",
-    inputSchema: { type: "object", properties: { law: str("法規名稱、簡稱或 ID，例如「設計施工編」「D0070115」"), articles: { type: "array", items: { type: "string" }, description: "條號清單，例如 [\"107\", \"108\"]" }, date: str("選填：查某一天有效的條文（建照依掛號日適用當時法令），例如 2018-05-01 或 107.05.01；會附上那天的條文、施行區間與出處，只收中央法規、民國 90 年 4 月以後"), region: str("同名法規時限定地區（可省略）") }, required: ["law", "articles"] },
+    inputSchema: { type: "object", properties: { law: str("法規名稱、簡稱或 ID，例如「設計施工編」「D0070115」"), articles: { type: "array", items: { type: "string" }, description: "條號清單，例如 [\"107\", \"108\"]" }, date: str("選填：查某一天有效的條文（建照依掛號日適用當時法令），例如 2018-05-01 或 107.05.01；會附上那天的條文、施行區間與出處；中央法規收民國 90 年 4 月以後，地方法規收各縣市法規系統「歷史法規」有的版本"), region: str("同名法規時限定地區（可省略）") }, required: ["law", "articles"] },
     annotations: { ...RO, title: "讀條文" }, run: getArticle,
   },
   {

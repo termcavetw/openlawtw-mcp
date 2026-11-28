@@ -196,7 +196,7 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   const d = await cu({ from_group: "B-2", to_group: "D-1", area: 400, floors: 3, floor: "2F", city: "桃園市", use_item: "卡拉OK" });
   ok("桃園免變：B-2→D-1 非限定項目 → 不符", /不符免辦變使條件/.test(d));
   const o = await cu({ from_group: "H-2", to_group: "G-3", area: 250, floors: 5, floor: "1F", city: "桃園市", use_item: "餐廳", apply_date: "115.10.01" });
-  ok("桃園免變：115.11.11 前申請 → 提醒舊版、改為要再確認", /早於 115\.11\.11 修正/.test(o) && /能否免辦變使要再確認/.test(o));
+  ok("桃園免變：115.11.11 前申請 → 提醒舊版、改為要再確認", /早於 115\.11\.13/.test(o) && /date="115.10.01"/.test(o) && /能否免辦變使要再確認/.test(o));
   ok("桃園免變：輸出不再寫 108 年函告無效", !/函告無效|1080000619/.test(o)); }
 { const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
   const a = await cu({ from_group: "G-2", to_group: "D-1", area: 400 });

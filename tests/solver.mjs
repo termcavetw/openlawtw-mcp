@@ -198,6 +198,9 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   const o = await cu({ from_group: "H-2", to_group: "G-3", area: 250, floors: 5, floor: "1F", city: "桃園市", use_item: "餐廳", apply_date: "115.10.01" });
   ok("桃園免變：115.11.11 前申請 → 提醒舊版、改為要再確認", /早於 115\.11\.11 修正/.test(o) && /能否免辦變使要再確認/.test(o));
   ok("桃園免變：輸出不再寫 108 年函告無效", !/函告無效|1080000619/.test(o)); }
+{ const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
+  const a = await cu({ from_group: "G-2", to_group: "D-1", area: 400 });
+  ok("變使停車類別依附表四：D-1 是第三類（G-2 第一類 → 第三類免檢討）", /由第 1 類（設置標準較高）變更為第 3 類/.test(a), a.slice(0, 300)); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

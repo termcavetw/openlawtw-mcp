@@ -229,6 +229,7 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("公共建築物：H-2 5 層 60 戶 → 是", /第 170 條）：是/.test(await cu({ from_group: "G-2", to_group: "H-2", floors: 5, units: 60 })));
   ok("公共建築物：C 類不是（103 年函）", /1030044357/.test(await cu({ from_group: "G-2", to_group: "C-2" })));
   ok("公共建築物：求解器 a170 行不再重複列", !/第 170 條公共建築物/.test(p1));
+  ok("變使：無障礙不再列求解器的「新建建築物」", !/第 167 條無障礙設施｜/.test(await cu({ from_group: "H-2", to_group: "H-1", area: 150, floors: 4, floor: "1F" })));
   // 消防設備前後比較
   const fd = await cu({ from_group: "G-3", to_group: "B-3", area: 600, floors: 4, floor: "2F" });
   ok("消防：G-3→B-3 600㎡ 由乙類變甲類、新增排煙", /由乙類變為甲類/.test(fd) && /＋ 第 28 條排煙設備/.test(fd), fd.split("消防安全設備（")[1]?.slice(0, 800));

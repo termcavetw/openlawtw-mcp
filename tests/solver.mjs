@@ -234,6 +234,8 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("消防：G-3→B-3 600㎡ 由乙類變甲類、新增排煙", /由乙類變為甲類/.test(fd) && /＋ 第 28 條排煙設備/.test(fd), fd.split("消防安全設備（")[1]?.slice(0, 800));
   ok("消防：沒填面積層數 → 提示", /填 area 與 floors 會列出/.test(await cu({ from_group: "G-3", to_group: "B-3" })));
   ok("變使：接受 from／to 參數名", /G-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" })) === false && /F-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" }))); }
+{ const p = solve({ group: "H-2", F: 5, typ: 500 }).out.find((o) => o.id === "p59");
+  ok("停車：(2500−500)÷150=13.33 → 14 輛（說明六零數設一輛）", JSON.stringify(p.calc).includes("14 輛") && p.req.some((x) => /說明六/.test(x)) && p.req.some((x) => /及其零數/.test(x)), p.calc); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

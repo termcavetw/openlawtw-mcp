@@ -236,6 +236,15 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("變使：接受 from／to 參數名", /G-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" })) === false && /F-3（.*）→ B-3/.test(await cu({ from: "F-3", to: "B-3" }))); }
 { const p = solve({ group: "H-2", F: 5, typ: 500 }).out.find((o) => o.id === "p59");
   ok("停車：(2500−500)÷150=13.33 → 14 輛（說明六零數設一輛）", JSON.stringify(p.calc).includes("14 輛") && p.req.some((x) => /說明六/.test(x)) && p.req.some((x) => /及其零數/.test(x)), p.calc); }
+{ const pk = (inp) => solve(inp).out.find((o) => o.id === "p59");
+  const d1 = pk({ group: "D-1", F: 2, typ: 500 });   // 1,000㎡：第三類 (1000−500)÷200 = 2.5 → 3
+  ok("停車：D-1 健身房預設第三類 → 3 輛，附 99 年函", JSON.stringify(d1.calc).includes("3 輛") && /0990086034/.test(d1.note), d1.calc);
+  const d1b = pk({ group: "D-1", F: 2, typ: 500, useItem: "撞球場" });   // 第一類 (1000−300)÷150 = 4.67 → 5
+  ok("停車：D-1 撞球場為表列第一類 → 5 輛", JSON.stringify(d1b.calc).includes("5 輛"), d1b.calc);
+  const h1 = pk({ group: "H-1", F: 2, typ: 500 });
+  ok("停車：H-1 依附表四第三類 → 3 輛", JSON.stringify(h1.calc).includes("3 輛") && /H-1 依附表四為第三類/.test(h1.note), h1.calc);
+  ok("停車：H-2 仍第二類 → 4 輛", JSON.stringify(pk({ group: "H-2", F: 2, typ: 500 }).calc).includes("4 輛"));
+  ok("停車：I 類依 107 年函按實際用途", /1070808428/.test(pk({ group: "I", F: 1, typ: 200 }).why)); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

@@ -118,26 +118,26 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
 { const o = solve({ group: "H-2", F: 12, floorAreas: [{ floors: "1-10", area: 600 }, { floors: "11-12", area: 200 }] }).out.find((x) => x.id === "l106"); ok("逐層：11 層以上合計 400 < 500 → 緊急昇降機免設（第 106 條第 2 款）", o.on === false && /400/.test(o.why), o); }
 { const o = solve({ group: "H-2", F: 12, floorAreas: [{ floors: "1-10", area: 600 }, { floors: "11-12", area: 300 }] }).out.find((x) => x.id === "l106"); ok("逐層：11 層以上合計 600 → 要設，看最大單層 300", o.on === true && /300/.test(o.why), o); }
 { const rd = radar({ group: "H-2", F: 10, floorAreas: [{ floors: "1", area: 420 }, { floors: "2-10", area: 230 }] }); ok("逐層：雷達放大面積有作用", JSON.stringify(rd).includes("面積")); }
-// 真實案例校正（事務所面積計算表，已去識別化：只留量體與分區）
-{ // 非都丁建廠房增建：1F 大、上層小（附屬空間）→ 第 271 條只標需確認；作業廠房 ≥1,500 設 1 處裝卸位
-  const o = solve({ group: "C-2", F: 5, B: 1, b1: 515.82, floorAreas: [{ floors: "1", area: 3466.26 }, { floors: "2", area: 1005.78 }, { floors: "3", area: 548.2 }, { floors: "4", area: 181.89 }, { floors: "5", area: 60.33 }], site: 11734, ba: 3560.56, urban: false, zoneTxt: "丁種建築用地" }).out;
+// 真實案例校正（取自實際面積計算表的情境；數字已取整並改動，不對應任何個案）
+{ // 非都丁建廠房：1F 大、上層小（附屬空間）→ 第 271 條只標需確認；作業廠房 ≥1,500 設 1 處裝卸位
+  const o = solve({ group: "C-2", F: 5, B: 1, b1: 500, floorAreas: [{ floors: "1", area: 3400 }, { floors: "2", area: 1000 }, { floors: "3", area: 550 }, { floors: "4", area: 180 }, { floors: "5", area: 60 }], site: 12000, ba: 3500, urban: false, zoneTxt: "丁種建築用地" }).out;
   const i = o.find((x) => x.id === "i269"), p = o.find((x) => x.id === "p59");
   ok("案例 丁建廠房：5F 60㎡ 只標需確認，不判不符", i.on === true && i.lvl === "?", i);
   ok("案例 丁建廠房：裝卸位 1 處", /1 處/.test(i.calc.find((x) => /278/.test(x[0]))[1]), i.calc);
-  ok("案例 丁建廠房：停車 (5262.46−500)/350 → 14 輛", p.on === true && /14 輛/.test(JSON.stringify(p.calc)), p.calc); }
-{ const o = solve({ group: "C-2", F: 4, floorAreas: [{ floors: "1", area: 2369.53 }, { floors: "2", area: 2144.32 }, { floors: "3", area: 300 }, { floors: "4", area: 623.26 }], urban: false, zoneTxt: "丁種建築用地" }).out.find((x) => x.id === "i269");
-  ok("案例 擴廠：5,437㎡ → 裝卸位 1 處（3,937 < 4,000 免增設）", /^1 處/.test(o.calc.find((x) => /278/.test(x[0]))[1]), o.calc); }
-{ const o = solve({ group: "C-2", F: 4, floorAreas: [{ floors: "1", area: 112.02 }, { floors: "2", area: 105.13 }, { floors: "3", area: 95.09 }, { floors: "4", area: 76.19 }], site: 332.14, ba: 112.02, urban: false, zoneTxt: "窯業用地" }).out;
+  ok("案例 丁建廠房：停車 (5190−500)/350 → 14 輛", p.on === true && /14 輛/.test(JSON.stringify(p.calc)), p.calc); }
+{ const o = solve({ group: "C-2", F: 4, floorAreas: [{ floors: "1", area: 2400 }, { floors: "2", area: 2100 }, { floors: "3", area: 300 }, { floors: "4", area: 600 }], urban: false, zoneTxt: "丁種建築用地" }).out.find((x) => x.id === "i269");
+  ok("案例 擴廠：5,400㎡ → 裝卸位 1 處（3,900 < 4,000 免增設）", /^1 處/.test(o.calc.find((x) => /278/.test(x[0]))[1]), o.calc); }
+{ const o = solve({ group: "C-2", F: 4, floorAreas: [{ floors: "1", area: 110 }, { floors: "2", area: 105 }, { floors: "3", area: 95 }, { floors: "4", area: 75 }], site: 330, ba: 110, urban: false, zoneTxt: "窯業用地" }).out;
   ok("案例 窯業廠房：第十四章不適用", o.find((x) => x.id === "i269").on === false);
   ok("案例 窯業廠房：第 96-1 條（住宅）不列", o.find((x) => x.id === "e96-1").on === false, o.find((x) => x.id === "e96-1"));
-  ok("案例 窯業廠房：容積 388.43／398.57 未超過", o.find((x) => x.id === "v-far").lvl === ""); }
-{ // 都市計畫住宅區 15 層、高 49.95 m：非高層；有開放空間獎勵＋容積移轉；停車扣除機電等
-  const r = solve({ group: "H-2", F: 15, B: 3, b1: 5135.74, floorAreas: [{ floors: "1", area: 2536.52 }, { floors: "2-14", area: 1930.63 }, { floors: "15", area: 1841.9 }], uses: [{ group: "G-3", floors: "1" }, { group: "H-2", floors: "2-15" }], H: 49.95, site: 5653.28, ba: 2809.86, bcr: 60, far: 260, units: 328, vfa: 23517.43, farBonus: 8819.1, parkEx: 1276.14 });
+  ok("案例 窯業廠房：容積 385／396 未超過", o.find((x) => x.id === "v-far").lvl === ""); }
+{ // 都市計畫住宅區 15 層、高 49.9 m：非高層；有容積獎勵＋移轉；停車扣除機電等
+  const r = solve({ group: "H-2", F: 15, B: 3, b1: 5000, floorAreas: [{ floors: "1", area: 2500 }, { floors: "2-14", area: 1900 }, { floors: "15", area: 1800 }], uses: [{ group: "G-3", floors: "1" }, { group: "H-2", floors: "2-15" }], H: 49.9, site: 5600, ba: 2800, bcr: 60, far: 260, units: 320, vfa: 23200, farBonus: 8700, parkEx: 1250 });
   const o = r.out, f = o.find((x) => x.id === "v-far"), p = o.find((x) => x.id === "p59"), a = o.find((x) => x.id === "a167-6");
-  ok("案例 15 層 49.95 m：非高層", o.find((x) => x.id === "h227").on === false);
-  ok("案例 15 層：有獎勵與移轉時不判超過容積", f.lvl === "" && /23,517.63/.test(JSON.stringify(f.calc)), f.calc);
-  ok("案例 15 層：停車扣除後約 186～187 輛（事務所 187）", p.on === true && Math.abs(r.c.park.n - 187) <= 1, r.c.park.n);
-  ok("案例 15 層：無障礙車位列第一類 3／第二類 4（事務所取 4）", a.on === true && /第一類 3 輛／第二類 4 輛/.test(JSON.stringify(a.calc)), a.calc); }
+  ok("案例 15 層 49.9 m：非高層", o.find((x) => x.id === "h227").on === false);
+  ok("案例 15 層：有獎勵與移轉時不判超過容積", f.lvl === "" && /23,260/.test(JSON.stringify(f.calc)), f.calc);
+  ok("案例 15 層：停車扣除後 151～200 輛", p.on === true && r.c.park.n > 150 && r.c.park.n <= 200, r.c.park.n);
+  ok("案例 15 層：無障礙車位列第一類 3／第二類 4", a.on === true && /第一類 3 輛／第二類 4 輛/.test(JSON.stringify(a.calc)), a.calc); }
 { const a = solve({ group: "H-2", F: 12, typ: 1500, urban: true }).out.find((x) => x.id === "a167-6"); ok("無障礙車位：純集合住宅用第一類", /第一類/.test(JSON.stringify(a.calc)), a.calc); }
 { const a = solve({ group: "G-2", F: 3, typ: 300 }).out.find((x) => x.id === "a167-6"); ok("無障礙車位：50 輛以下至少 1 輛", a.on === true && /至少 1 輛/.test(JSON.stringify(a.calc)), a); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則

@@ -56,7 +56,7 @@ T("f28 H-2 5F 不觸發", { group: "H-2", F: 5, typ: 500 }, "f28", false);
 ok("H 51m 屬高層", solve({ group: "H-2", F: 15, B: 3, typ: 620, H: 51 }).c.high === true);
 { const p = solve({ group: "H-2", F: 7, typ: 400, site: 900 }).out.find((o) => o.id === "p59"); ok("法定停車 16 輛", /16 輛/.test(JSON.stringify(p.calc)), p.calc); }
 { const rd = radar({ group: "H-2", F: 5, B: 1, typ: 230, site: 420 }); const up = rd.find((x) => /加到 6 層/.test(x.label)); ok("雷達 5→6 層多出昇降機與防空避難", up && ["l55", "p141", "e96"].every((id) => up.ch.some((c) => c.id === id)), up && up.ch.map((c) => c.id)); }
-ok("規則 64 條", R.length === 64, R.length);
+ok("規則 66 條", R.length === 66, R.length);
 // 2026-11-27：混合用途、供公眾判定、無障礙廁所、消防甲類逐層
 { const r = solve({ group: "C-2", F: 4, typ: 120 }); const o = (id) => r.out.find((x) => x.id === id);
   ok("窯業廠房 4F×120：應為防火構造", o("fp69").on === true);
@@ -140,6 +140,22 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   ok("案例 15 層：無障礙車位列第一類 3／第二類 4", a.on === true && /第一類 3 輛／第二類 4 輛/.test(JSON.stringify(a.calc)), a.calc); }
 { const a = solve({ group: "H-2", F: 12, typ: 1500, urban: true }).out.find((x) => x.id === "a167-6"); ok("無障礙車位：純集合住宅用第一類", /第一類/.test(JSON.stringify(a.calc)), a.calc); }
 { const a = solve({ group: "G-2", F: 3, typ: 300 }).out.find((x) => x.id === "a167-6"); ok("無障礙車位：50 輛以下至少 1 輛", a.on === true && /至少 1 輛/.test(JSON.stringify(a.calc)), a); }
+{ // 衛生設備（設備編第 37 條）：店鋪居室 1,252.1㎡ × 0.2 → 251 人 → 男 2、女 7、小 4、洗面盆 7（與事務所檢討一致）
+  const w = solve({ group: "B-2", F: 2, typ: 626.05 }).out.find((x) => x.id === "w37");
+  ok("衛生設備：其他供公眾使用 251 人 → 2／7／4／7", /男大便器 2、女大便器 7、小便器 4、洗面盆 7/.test(JSON.stringify(w.calc)), w.calc);
+  const o = solve({ group: "G-2", F: 1, typ: 1000 }).out.find((x) => x.id === "w37");
+  ok("衛生設備：辦公 100 人 → 1／4／2／5", /男大便器 1、女大便器 4、小便器 2、洗面盆 5/.test(JSON.stringify(o.calc)), o.calc);
+  const h = solve({ group: "H-2", F: 5, typ: 300, units: 20 }).out.find((x) => x.id === "w37");
+  ok("衛生設備：住宅每戶一套", /20 戶/.test(JSON.stringify(h.calc)), h.calc); }
+{ const i = solve({ group: "C-2", F: 3, floorAreas: [{ floors: "1-2", area: 3000 }, { floors: "3", area: 4700 }], urban: false, zoneTxt: "丁種建築用地", wsArea: 9300 }).out.find((x) => x.id === "i269");
+  ok("作業廠房 9,300 → 裝卸位 2 處、辦公室上限 1,860", /^2 處/.test(i.calc.find((x) => /278/.test(x[0]))[1]) && /1,860 ㎡/.test(i.calc.find((x) => /272/.test(x[0]))[1]), i.calc); }
+{ // 第 164 條：5 層集合住宅 H=17、面前道路 6 m、臨接 26.86 m（事務所：H ≤ 3.6(6+D)、As ≤ 80.58）
+  const g = solve({ group: "H-2", F: 5, typ: 300, H: 17, Sw: 6, L: 26.86 }).out.find((x) => x.id === "g164h");
+  ok("第 164 條：17 m 臨 6 m 路不必退縮；陰影上限 80.58", g.on === true && /不必退縮/.test(JSON.stringify(g.calc)) && /80\.58/.test(JSON.stringify(g.calc)), g.calc);
+  const k = solve({ group: "H-2", F: 10, typ: 300, H: 30, Sw: 6 }).out.find((x) => x.id === "g164h");
+  ok("第 164 條：30 m 臨 6 m 路，頂部須退 ≥ 2.34 m", k.lvl === "!" && /2\.34 m/.test(JSON.stringify(k.calc)), k.calc);
+  const n = solve({ group: "H-2", F: 3, typ: 200, H: 10, Sw: 8 }).out.find((x) => x.id === "g164h");
+  ok("第 164 條：10 m 臨 8 m 路不必退縮", n.lvl === "" && /不必退縮/.test(JSON.stringify(n.calc)), n.calc); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

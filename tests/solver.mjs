@@ -180,6 +180,12 @@ T("未填建蔽率 → 建蔽試算需確認", { group: "H-2", F: 5, typ: 200, s
   const f = await cu({ from_group: "H-2", to_group: "D-1", zone: "住宅區", whole_floor: false, main_group: "B-4", city: "桃園市" });
   ok("變使 →D-1：列第 5、7 條、附表五、桃園免變使與防火標章", /第 7 條/.test(f) && /局部變更（第 5 條）/.test(f) && /附表五：D-1 作為 B-4/.test(f) && /防火標章/.test(f));
   ok("變使：類組相同回錯", /不是變更使用類組/.test(await cu({ from_group: "G-2", to_group: "G-2" }))); }
+{ const { checkChangeOfUse: cu } = await import("../lib/change-of-use.js");
+  // 6 層混合使用大樓 2F 辦公局部改補習班（去識別化數字）
+  const g = await cu({ from_group: "G-2", to_group: "D-5", area: 190, floor_area: 460, floors: 6, floor: "2F", whole_floor: false });
+  ok("變使 G-2→D-5 2F：※、停車免檢討、求解器以 2F 改 D-5 跑", /「※」/.test(g) && /較低）：免檢討/.test(g) && /2F 改為 D-5、其他層 G-2/.test(g) && /第 95 條二座以上直通樓梯｜觸發/.test(g), g.slice(0, 500));
+  const r = solve({ group: "G-2", F: 6, typ: 460, uses: [{ group: "D-5", floors: "2" }] }).c;
+  ok("混合用途樓層文字：G-2（1F、3F～6F）、D-5（2F）", r.useTxt === "G-2（1F、3F～6F）、D-5（2F）", r.useTxt); }
 { // 每條規則引用的條文都在核對快照裡；函釋對照表的 id 都對得到規則
   const snap = JSON.parse(readFileSync(new URL("../lib/law-solver-snapshot.json", import.meta.url))).articles;
   const RJ = JSON.parse(readFileSync(new URL("../lib/law-solver-rulings.json", import.meta.url)));

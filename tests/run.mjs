@@ -77,6 +77,8 @@ const CASES = [
   ["check_building", { group: "Z-9", floors: 5, typical_floor_area: 230 }, ["不認得類組"], { error: true }],
   ["check_change_of_use", { from_group: "H-2", to_group: "G-3", area: 300 }, ["附表三", "停車空間", "無障礙設施"]],
   ["check_change_of_use", { from_group: "X", to_group: "G-3" }, ["不認得原使用類組"], { error: true }],
+  ["check_change_of_use", { from_group: "G-3", to_group: "H-2", zone: "乙種建築用地", use_item: "住宅", urban_plan: false }, ["免經申請：1.住宅", "原表寫「同甲種建築用地」"]],
+  ["check_change_of_use", { from_group: "C-2", to_group: "C-1", zone: "丁種建築用地", use_item: "汽車修理", urban_plan: false }, ["免經申請：13.汽車修理業"]],
   ["check_change_of_use", { from_group: "H-2", to_group: "G-3", city: "臺北市", area: 120 }, ["臺北市：附表「⊕／5」", "⊕：擬使用為餐廳", "符合其中之一"]],
   ["check_change_of_use", { from_group: "D-1", to_group: "D-5", city: "新竹市" }, ["原表這一格是空白", "不要自行推定"]],
   ["check_change_of_use", { from_group: "H-2", to_group: "D-5", city: "臺中市" }, ["臺中市：附表有變更為 D-5", "避難層變更為D類第5組"]],

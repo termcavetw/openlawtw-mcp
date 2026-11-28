@@ -10,7 +10,7 @@ import { verifyCitations } from "../lib/verify-tools.js";
 import { SCHEMAS, structure } from "../lib/structured.js";
 import { landusePoints, searchLanduse, getLanduse } from "../lib/landuse-tools.js";
 
-const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.22.0" };
+const SERVER = { name: "openlawtw", title: "openlawtw 臺灣建築法規", version: "1.23.0" };
 const PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `openlawtw：臺灣建築、都市計畫、土地使用法規與國土署函釋資料庫。
@@ -102,7 +102,7 @@ const TOOLS = [
   {
     name: "check_change_of_use", title: "變更使用類組：要檢討哪些項目",
     description: "建築物變更使用類組的初篩：依「建築物使用類組及變更使用辦法」附表三（變更使用原則表）判斷原類組→新類組的符號（☆／△／※／○／◎），列出附表四該類組各檢討項目的標準；停車空間自動判斷是否免檢討，無障礙依原建照申請日判斷；另列第 5 條局部變更、第 6 條主從用途（附表五）、第 7 條、第 8 條。填 area（變更範圍面積）與 floors 時，附上求解器對變更後類組的門檻。city 填桃園市時，另列「桃園市一定規模以下建築物免辦理變更使用執照管理辦法」。類組以原領使用執照登載的為準；這是初篩，不是主管機關認定。",
-    inputSchema: { type: "object", properties: { from_group: str("原領使用執照的使用類組，如 H-2"), to_group: str("變更後的使用類組，如 G-3"), area: { type: "number", description: "變更範圍樓地板面積 ㎡（選填；停車試算、求解器門檻）" }, floors: { type: "integer", minimum: 1, description: "建築物地上層數（選填）" }, floor: str("變更範圍所在樓層（選填，如 2F、B1）：填了會以「該層改新類組、其他層維持原類組」跑求解器"), floor_area: { type: "number", description: "變更所在樓層的樓地板面積 ㎡（選填；預設等於 area，局部變更時填整層面積較準）" }, whole_floor: { type: "boolean", description: "是否整層變更（預設 true；false 會列第 5 條局部變更的區劃條件）" }, permit_date: str("原建造執照申請日期（選填，如 2010-05-01 或 99.05.01；判斷無障礙）"), zone: str("使用分區（選填；第 7 條非商業區的區劃）"), main_group: str("同一使用單元的主用途類組（選填；以附表五判斷 to_group 是否為其從屬用途）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；停車標準）" }, site_area: { type: "number", description: "基地面積 ㎡（選填）" }, city: str("縣市（選填）：填「桃園市」會列一定規模以下免辦理變更使用執照管理辦法") }, required: ["from_group", "to_group"] },
+    inputSchema: { type: "object", properties: { from_group: str("原領使用執照的使用類組，如 H-2"), to_group: str("變更後的使用類組，如 G-3"), area: { type: "number", description: "變更範圍樓地板面積 ㎡（選填；停車試算、求解器門檻）" }, floors: { type: "integer", minimum: 1, description: "建築物地上層數（選填）" }, floor: str("變更範圍所在樓層（選填，如 2F、B1）：填了會以「該層改新類組、其他層維持原類組」跑求解器"), floor_area: { type: "number", description: "變更所在樓層的樓地板面積 ㎡（選填；預設等於 area，局部變更時填整層面積較準）" }, whole_floor: { type: "boolean", description: "是否整層變更（預設 true；false 會列第 5 條局部變更的區劃條件）" }, permit_date: str("原建造執照申請日期（選填，如 2010-05-01 或 99.05.01；判斷無障礙）"), zone: str("使用分區（選填；第 7 條非商業區的區劃）"), main_group: str("同一使用單元的主用途類組（選填；以附表五判斷 to_group 是否為其從屬用途）"), urban_plan: { type: "boolean", description: "是否在都市計畫內（預設 true；停車標準）" }, site_area: { type: "number", description: "基地面積 ㎡（選填）" }, city: str("縣市（選填）：填「桃園市」會依「一定規模以下免辦理變更使用執照管理辦法」附表一判斷能否免辦變使"), use_item: str("變更後的使用項目（選填，如 餐廳、補習班、健身房；附表一 △、⑤ 的項目限制）"), standalone: { type: "boolean", description: "是否為獨棟或他棟建築物（選填；附表一 ④）" } }, required: ["from_group", "to_group"] },
     annotations: { ...RO, title: "變更使用檢討" }, run: checkChangeOfUse,
   },
   {
